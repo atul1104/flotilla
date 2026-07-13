@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: flotilla
+          POSTGRES_PASSWORD: flotilla
+          POSTGRES_DB: flotilla_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U flotilla -d flotilla_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://flotilla:flotilla@localhost:5432/flotilla_test?schema=public
+      SESSION_SECRET: ci-test-secret-32-chars-minimum-please
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # Plain JS monorepo (PLAN.md §3). ESLint is the static-analysis gate;
+      # there is no tsc step — Zod schemas catch shape errors at runtime.
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - name: Prisma migrate (test DB)
+        run: npm run db:migrate --workspace @flotilla/api
+      - run: npm test

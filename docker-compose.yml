@@ -1,0 +1,66 @@
+# Dev dependencies only. Prod uses managed Postgres + object storage (PLAN.md §14).
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: flotilla-postgres
+    environment:
+      POSTGRES_USER: flotilla
+      POSTGRES_PASSWORD: flotilla
+      POSTGRES_DB: flotilla
+    ports:
+      - '5433:5432' # host port 5433 to avoid clashing with a native postgres on 5432
+    volumes:
+      - flotilla-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U flotilla -d flotilla']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    # S3-compatible object storage for uploads (PLAN.md §3).
+    image: minio/minio:latest
+    container_name: flotilla-minio
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: flotilla
+      MINIO_ROOT_PASSWORD: flotilla123
+    ports:
+      - '9000:9000' # S3 API
+      - '9001:9001' # web console
+    volumes:
+      - flotilla-miniodata:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Auto-create the uploads bucket on first boot.
+  createbuckets:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 flotilla flotilla123;
+      mc mb --ignore-existing local/flotilla-uploads;
+      mc anonymous set download local/flotilla-uploads || true;
+      exit 0;
+      "
+
+  mailpit:
+    # Dev mail server for email verification / digests (PLAN.md §14).
+    image: axllent/mailpit:latest
+    container_name: flotilla-mailpit
+    ports:
+      - '1025:1025' # SMTP
+      - '8025:8025' # web UI
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: true
+      MP_SMTP_AUTH_ALLOW_INSECURE: true
+
+volumes:
+  flotilla-pgdata:
+  flotilla-miniodata:

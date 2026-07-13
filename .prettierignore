@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+.vite
+coverage
+pnpm-lock.yaml
+package-lock.json
+apps/api/prisma/migrations
+**/*.md

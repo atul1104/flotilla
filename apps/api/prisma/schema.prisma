@@ -1,0 +1,573 @@
+// Flotilla datasource. Postgres 17.
+//
+// Baseline (Phase 0): identity + workspaces + channels/messages — the
+// "users → messages tables" span (PLAN.md §15). Subsequent phases EXTEND this
+// file and add named migrations:
+//   Phase 3: tasks, task_events
+//   Phase 4: computers, device_tokens, agents, agent_runs, run_events, approvals
+//   Phase 6: notifications, push_subscriptions, usage_counters, subscriptions + FTS
+//
+// Design (PLAN.md §6): humans and agents are unified as "actors" so messages,
+// tasks, mentions, and reactions reference ONE table.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums (map the CHECK constraints in PLAN.md §6)
+// ---------------------------------------------------------------------------
+enum ActorKind {
+  user
+  agent
+}
+
+enum WorkspaceRole {
+  owner
+  admin
+  member
+  agent
+}
+
+enum Plan {
+  free
+  pro
+  enterprise
+}
+
+enum ChannelKind {
+  public
+  private
+  dm
+}
+
+enum NotifyLevel {
+  all
+  mentions
+  nothing
+}
+
+enum TaskStatus {
+  backlog
+  claimed
+  running
+  needs_review
+  done
+  cancelled
+}
+
+enum ComputerStatus {
+  online
+  offline
+}
+
+enum AgentStatus {
+  idle
+  running
+  offline
+}
+
+enum Runtime {
+  claude_code
+  openai_api
+  codex
+  mock
+}
+
+enum RunStatus {
+  queued
+  dispatched
+  running
+  awaiting_approval
+  succeeded
+  failed
+  cancelled
+}
+
+enum ApprovalDecision {
+  approved
+  denied
+}
+
+// ---------------------------------------------------------------------------
+// Identity
+// ---------------------------------------------------------------------------
+model User {
+  id             String   @id @default(uuid()) @db.Uuid
+  email          String   @unique // stored pre-lowercased (citext deferred; app lowercases)
+  passwordHash   String?  @map("password_hash") // null if OAuth-only (Phase 6)
+  name           String
+  avatarUrl      String?  @map("avatar_url")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  actor        Actor?           @relation("UserActor") // FK lives on actors.user_id
+  emailTokens  EmailToken[]     @relation("EmailTokens") // verify + reset, split by `purpose`
+  ownedWorkspaces Workspace[]   @relation("WorkspaceOwner")
+  invitesSent  Invite[]         @relation("InviteSender")
+  uploads      Attachment[]     @relation("Uploader")
+  computers    Computer[]       @relation("ComputerOwner")
+  notifications Notification[]  @relation("UserNotifications")
+  pushSubs     PushSubscription[] @relation("UserPushSubs")
+
+  @@map("users")
+}
+
+model EmailToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation("EmailTokens", fields: [userId], references: [id], onDelete: Cascade)
+  purpose   String // 'verify_email' | 'reset_password'
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, purpose])
+  @@map("email_tokens")
+}
+
+model Actor {
+  id      String     @id @default(uuid()) @db.Uuid
+  kind    ActorKind
+  userId  String?    @unique @map("user_id") @db.Uuid
+  user    User?      @relation("UserActor", fields: [userId], references: [id])
+  // agentId added in Phase 4 (agents) — exactly one of userId/agentId is set.
+  agentId  String?  @unique @map("agent_id") @db.Uuid
+  agent    Agent?   @relation // FK lives on agents.actor_id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  workspaceMembers WorkspaceMember[]
+  channelMembers   ChannelMember[]
+  channelsCreated  Channel[]         @relation("ChannelCreator")
+  messages         Message[]         @relation("MessageSender")
+  reactions        Reaction[]
+  mentionsOf       Mention[]         @relation("Mentioned")
+  tasksCreated     Task[]            @relation("TaskCreator")
+  tasksAssigned    Task[]            @relation("TaskAssignee")
+
+  @@map("actors")
+}
+
+// ---------------------------------------------------------------------------
+// Workspaces
+// ---------------------------------------------------------------------------
+model Workspace {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  ownerId   String   @map("owner_id") @db.Uuid
+  owner     User     @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  plan      Plan     @default(free)
+  settings  Json     @default("{}") @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members  WorkspaceMember[]
+  invites  Invite[]
+  channels Channel[]
+  tasks    Task[]
+  computers Computer[]
+  agents    Agent[]
+  notifications Notification[]
+  usageCounters UsageCounter[]
+  subscription  Subscription?
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  workspaceId String         @map("workspace_id") @db.Uuid
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actorId     String         @map("actor_id") @db.Uuid
+  actor       Actor          @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  role        WorkspaceRole
+  joinedAt    DateTime       @default(now()) @map("joined_at")
+
+  @@id([workspaceId, actorId])
+  @@index([actorId])
+  @@map("workspace_members")
+}
+
+model Invite {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String    @map("workspace_id") @db.Uuid
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email       String
+  role        WorkspaceRole @default(member)
+  token       String    @unique
+  invitedBy   String    @map("invited_by") @db.Uuid
+  inviter     User      @relation("InviteSender", fields: [invitedBy], references: [id])
+  expiresAt   DateTime  @map("expires_at")
+  acceptedAt  DateTime? @map("accepted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([workspaceId])
+  @@map("invites")
+}
+
+// ---------------------------------------------------------------------------
+// Channels & Messages
+// ---------------------------------------------------------------------------
+model Channel {
+  id          String      @id @default(uuid()) @db.Uuid
+  workspaceId String      @map("workspace_id") @db.Uuid
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name        String
+  topic       String?
+  kind        ChannelKind
+  createdById String?     @map("created_by") @db.Uuid
+  createdBy   Actor?      @relation("ChannelCreator", fields: [createdById], references: [id])
+  archivedAt  DateTime?   @map("archived_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  members  ChannelMember[]
+  messages Message[]
+  tasks    Task[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@map("channels")
+}
+
+model ChannelMember {
+  channelId        String     @map("channel_id") @db.Uuid
+  channel          Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  actorId          String     @map("actor_id") @db.Uuid
+  actor            Actor      @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  lastReadMessageId String?   @map("last_read_message_id") @db.Uuid
+  notifyLevel      NotifyLevel @default(mentions) @map("notify_level")
+  joinedAt         DateTime   @default(now()) @map("joined_at")
+
+  @@id([channelId, actorId])
+  @@index([actorId])
+  @@map("channel_members")
+}
+
+model Message {
+  id           String    @id @default(uuid()) @db.Uuid
+  channelId    String    @map("channel_id") @db.Uuid
+  channel      Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  senderId     String    @map("sender_id") @db.Uuid
+  sender       Actor     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  threadRootId String?   @map("thread_root_id") @db.Uuid
+  threadRoot   Message?  @relation("MessageThread", fields: [threadRootId], references: [id], onDelete: NoAction)
+  replies      Message[] @relation("MessageThread")
+  content      String
+  payload      Json?     @db.JsonB // structured cards: task refs, approvals, artifacts
+  runId        String?   @map("run_id") @db.Uuid // set when authored by an agent run (Phase 4)
+  // Phase 6 FTS: generated tsvector over content (managed in SQL; queried raw).
+  searchTsv    Unsupported("tsvector")?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  editedAt     DateTime? @map("edited_at")
+  deletedAt    DateTime? @map("deleted_at")
+  // search_tsv tsvector + GIN added in Phase 6 (FTS) migration
+
+  attachments Attachment[]
+  reactions   Reaction[]
+  mentions    Mention[]
+
+  @@index([channelId, createdAt])
+  @@index([threadRootId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model Attachment {
+  id          String   @id @default(uuid()) @db.Uuid
+  messageId   String?  @map("message_id") @db.Uuid
+  message     Message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  uploaderId  String   @map("uploader_id") @db.Uuid
+  uploader    User     @relation("Uploader", fields: [uploaderId], references: [id])
+  filename    String
+  mime        String
+  sizeBytes   BigInt   @map("size_bytes")
+  storageKey  String   @unique @map("storage_key")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([messageId])
+  @@map("attachments")
+}
+
+model Reaction {
+  messageId String  @map("message_id") @db.Uuid
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  actorId   String  @map("actor_id") @db.Uuid
+  actor     Actor   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([messageId, actorId, emoji])
+  @@map("reactions")
+}
+
+// The mentioner is implicit (the message's sender).
+model Mention {
+  messageId         String  @map("message_id") @db.Uuid
+  message           Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  mentionedActorId  String  @map("mentioned_actor_id") @db.Uuid
+  mentionedActor    Actor   @relation("Mentioned", fields: [mentionedActorId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, mentionedActorId])
+  @@index([mentionedActorId])
+  @@map("mentions")
+}
+
+// ---------------------------------------------------------------------------
+// Tasks (Phase 3) + audit trail
+// ---------------------------------------------------------------------------
+model Task {
+  id           String     @id @default(uuid()) @db.Uuid
+  workspaceId  String     @map("workspace_id") @db.Uuid
+  workspace    Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  channelId    String?    @map("channel_id") @db.Uuid
+  channel      Channel?   @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  title        String
+  description  String?
+  status       TaskStatus @default(backlog)
+  priority     Int        @default(2)
+  createdById  String     @map("created_by") @db.Uuid
+  createdBy    Actor      @relation("TaskCreator", fields: [createdById], references: [id])
+  assigneeId   String?    @map("assignee_id") @db.Uuid
+  assignee     Actor?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  parentTaskId String?    @map("parent_task_id") @db.Uuid
+  parentTask   Task?      @relation("TaskChildren", fields: [parentTaskId], references: [id], onDelete: NoAction)
+  subTasks     Task[]     @relation("TaskChildren")
+  rootMessageId String?   @map("root_message_id") @db.Uuid
+  dueAt        DateTime?  @map("due_at")
+  schedule     Json?      @db.JsonB // {cron, tz} — Phase 6
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  completedAt  DateTime?  @map("completed_at")
+
+  events TaskEvent[]
+
+  @@index([workspaceId, status])
+  @@index([assigneeId])
+  @@index([channelId])
+  @@map("tasks")
+}
+
+model TaskEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  taskId    String   @map("task_id") @db.Uuid
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actorId   String   @map("actor_id") @db.Uuid
+  type      String // created | status_changed | assigned | claimed | handoff | completed | commented
+  payload   Json     @default("{}") @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([taskId, createdAt])
+  @@map("task_events")
+}
+
+// ---------------------------------------------------------------------------
+// Computers + agents + runs (Phase 4 — the heart of the product)
+// ---------------------------------------------------------------------------
+model Computer {
+  id            String         @id @default(uuid()) @db.Uuid
+  workspaceId   String         @map("workspace_id") @db.Uuid
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ownerUserId   String         @map("owner_user_id") @db.Uuid
+  ownerUser     User           @relation("ComputerOwner", fields: [ownerUserId], references: [id])
+  name          String
+  platform      String?
+  daemonVersion String?        @map("daemon_version")
+  status        ComputerStatus @default(offline)
+  lastSeenAt    DateTime?      @map("last_seen_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  deviceTokens DeviceToken[]
+  agents       Agent[]
+  runs         AgentRun[]
+
+  @@index([workspaceId])
+  @@map("computers")
+}
+
+model DeviceToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  computerId String    @map("computer_id") @db.Uuid
+  computer   Computer  @relation(fields: [computerId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique @map("token_hash")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  @@index([computerId])
+  @@map("device_tokens")
+}
+
+model Agent {
+  id              String      @id @default(uuid()) @db.Uuid
+  workspaceId     String      @map("workspace_id") @db.Uuid
+  workspace       Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actor           Actor?      @relation(fields: [actorId], references: [id])
+  actorId         String?     @unique @map("actor_id") @db.Uuid
+  name            String
+  handle          String // @handle, lowercased
+  avatarUrl       String?     @map("avatar_url")
+  tagline         String?
+  systemPrompt    String?     @map("system_prompt")
+  runtime         Runtime     @default(mock)
+  model           String?
+  computerId      String?     @map("computer_id") @db.Uuid
+  computer        Computer?   @relation(fields: [computerId], references: [id], onDelete: SetNull)
+  approvalPolicy  Json        @default("{}") @db.JsonB
+  status          AgentStatus @default(offline)
+  createdBy       String      @map("created_by") @db.Uuid
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  runs AgentRun[]
+
+  @@unique([workspaceId, handle])
+  @@index([workspaceId])
+  @@map("agents")
+}
+
+model AgentRun {
+  id               String         @id @default(uuid()) @db.Uuid
+  agentId          String         @map("agent_id") @db.Uuid
+  agent            Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  computerId       String?        @map("computer_id") @db.Uuid
+  computer         Computer?      @relation(fields: [computerId], references: [id], onDelete: SetNull)
+  workspaceId      String         @map("workspace_id") @db.Uuid
+  taskId           String?        @map("task_id") @db.Uuid
+  triggerMessageId String?        @map("trigger_message_id") @db.Uuid
+  status           RunStatus      @default(queued)
+  model            String?
+  tokensIn         BigInt         @default(0) @map("tokens_in")
+  tokensOut        BigInt         @default(0) @map("tokens_out")
+  costEstimateCents Int?          @map("cost_estimate_cents")
+  error            String?
+  // Phase 5 — multi-agent loop safety (PLAN.md §8.4). chainDepth counts
+  // agent→agent triggers (0 = direct human/schedule trigger); parentRunId is the
+  // run that handed off to this one. Used to cap chain depth + prevent self-loops.
+  chainDepth       Int            @default(0) @map("chain_depth")
+  parentRunId      String?        @map("parent_run_id") @db.Uuid
+  trigger          String         @default("mention") @map("trigger") // mention|task|dm|handoff|test|retry|schedule
+  queuedAt         DateTime       @default(now()) @map("queued_at")
+  startedAt        DateTime?      @map("started_at")
+  finishedAt       DateTime?      @map("finished_at")
+
+  events     RunEvent[]
+  approvals  Approval[]
+
+  @@index([agentId])
+  @@index([workspaceId, status])
+  @@index([parentRunId])
+  @@map("agent_runs")
+}
+
+model RunEvent {
+  id        BigInt   @id @default(autoincrement()) @db.BigInt
+  runId     String   @map("run_id") @db.Uuid
+  run       AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  seq       Int
+  type      String // status|thinking|tool_use|tool_result|approval_request|chunk|final
+  payload   Json     @default("{}") @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([runId, seq])
+  @@index([runId])
+  @@map("run_events")
+}
+
+model Approval {
+  id              String          @id @default(uuid()) @db.Uuid
+  runId           String          @map("run_id") @db.Uuid
+  run             AgentRun        @relation(fields: [runId], references: [id], onDelete: Cascade)
+  messageId       String?         @map("message_id") @db.Uuid
+  requestedAction Json            @map("requested_action") @db.JsonB
+  decidedBy       String?         @map("decided_by") @db.Uuid
+  decision        ApprovalDecision?
+  decidedAt       DateTime?       @map("decided_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([runId])
+  @@map("approvals")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6: notifications, web push, usage counters, billing subscription
+// ---------------------------------------------------------------------------
+model Notification {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  user        User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String   @map("workspace_id") @db.Uuid
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  type        String // mention | approval | run_finished | task_assigned | digest
+  payload     Json     @default("{}") @db.JsonB
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId, readAt])
+  @@index([workspaceId])
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation("UserPushSubs", fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// Daily rolled-up usage per workspace (PLAN.md §6). Fed incrementally + queried
+// by the usage dashboard; the source of truth for tokens/cost is agent_runs.
+model UsageCounter {
+  workspaceId   String   @map("workspace_id") @db.Uuid
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  period        DateTime @db.Date
+  runsCount     Int      @default(0) @map("runs_count")
+  tokensIn      BigInt   @default(0) @map("tokens_in")
+  tokensOut     BigInt   @default(0) @map("tokens_out")
+  costCents     Int      @default(0) @map("cost_cents")
+  uploadsBytes  BigInt   @default(0) @map("uploads_bytes")
+  messagesCount Int      @default(0) @map("messages_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@id([workspaceId, period])
+  @@map("usage_counters")
+}
+
+// Billing subscription (schema now; Stripe wiring is Phase 7 — PLAN.md §12).
+model Subscription {
+  id                   String   @id @default(uuid()) @db.Uuid
+  workspaceId          String   @unique @map("workspace_id") @db.Uuid
+  workspace            Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String?  @map("stripe_customer_id")
+  stripeSubscriptionId String?  @map("stripe_subscription_id")
+  plan                 Plan     @default(free)
+  seats                Decimal  @default(0) @db.Decimal(10, 2)
+  billingCycle         String?  @map("billing_cycle") // monthly | annual
+  currentPeriodEnd     DateTime? @map("current_period_end")
+  status               String? // active | past_due | canceled (Stripe)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+model Session {
+  sid       String   @id
+  sess      Json     @db.Json
+  expire    DateTime
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([expire])
+  @@map("session")
+}

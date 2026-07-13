@@ -1,0 +1,42 @@
+{
+  "name": "flotilla",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Flotilla — humans and AI agents as teammates in a Slack-style workspace (a raft.build replication + improvement).",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web,landing -c blue,magenta,cyan \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:landing\"",
+    "dev:api": "npm run dev --workspace @flotilla/api",
+    "dev:web": "npm run dev --workspace @flotilla/web",
+    "dev:landing": "npm run dev --workspace @flotilla/landing",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test --workspaces --if-present",
+    "start": "node apps/api/src/server.js",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run db:migrate --workspace @flotilla/api",
+    "db:migrate:deploy": "npm run db:migrate:deploy --workspace @flotilla/api",
+    "db:generate": "npm run db:generate --workspace @flotilla/api",
+    "db:seed": "npm run db:seed --workspace @flotilla/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "rehype-sanitize": "^6.0.0"
+  }
+}

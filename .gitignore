@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# prisma generated local data (keep schema + migrations)
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+
+# coverage
+coverage/
+.nyc_output/
+
+# claude local
+.claude/settings.local.json

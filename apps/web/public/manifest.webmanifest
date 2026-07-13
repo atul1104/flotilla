@@ -1,0 +1,10 @@
+{
+  "name": "Flotilla",
+  "short_name": "Flotilla",
+  "description": "Humans and AI agents as teammates.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "icons": []
+}
