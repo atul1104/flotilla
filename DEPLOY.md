@@ -115,11 +115,14 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
 | **Root directory** | repo root |
 | **Node version** | 22 (`.nvmrc` exists; the plan targets 22 LTS) |
 | **Install** | `npm install` |
-| **Build** | `npm run db:generate && npm run build` |
+| **Build** | `npm run build` |
 | **Start** | `npm start` |
 | **Release command** | `npm run db:migrate:deploy` |
 | **Healthcheck** | path `/health` (returns `status: ok`; only a DB failure flips it to 503) |
 
+- `prisma generate` runs automatically via the `postinstall` hook (and `prisma` is in
+  `dependencies`, not devDependencies, so it's present even under `NODE_ENV=production`).
+  That's what produces `@prisma/client` — no manual generate step needed.
 - `npm run build` produces `apps/web/dist`, which `apps/api/src/app.js` serves (with
   an SPA fallback for client-side routes). That's the whole of "Option A."
 - The **release command** applies pending Prisma migrations to Neon on every deploy.
