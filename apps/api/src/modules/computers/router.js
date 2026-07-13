@@ -8,18 +8,21 @@ import { validateBody } from '../../middleware/validate.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { requireWorkspaceMember } from '../../middleware/workspace.js';
 import { pairSchema } from '@flotilla/shared';
+import { config } from '../../config.js';
 import * as svc from './service.js';
 
 export const router = Router();
 
-// POST /workspaces/:id/computers/pairing-code → { code }
+// POST /workspaces/:id/computers/pairing-code → { code, serverUrl }
+// serverUrl is the origin the daemon should reach the API at (API_ORIGIN), so the
+// pairing command works across machines — not just when daemon + server are colocated.
 router.post(
   '/workspaces/:id/computers/pairing-code',
   requireAuth,
   requireWorkspaceMember,
   asyncHandler(async (req, res) => {
     const code = svc.createPairingCode(req.workspace.id, req.userId);
-    res.json({ code });
+    res.json({ code, serverUrl: config.API_ORIGIN });
   }),
 );
 

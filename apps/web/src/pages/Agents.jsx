@@ -48,15 +48,21 @@ export function Agents() {
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [pairCode, setPairCode] = useState(null);
+  const [pairServerUrl, setPairServerUrl] = useState(null);
   const [copied, setCopied] = useState(false);
 
   const pairMutation = useMutation({
     mutationFn: () => api.post(`/workspaces/${workspace.id}/computers/pairing-code`),
-    onSuccess: (data) => setPairCode(data.code),
+    onSuccess: (data) => {
+      setPairCode(data.code);
+      setPairServerUrl(data.serverUrl);
+    },
   });
 
   const copyCmd = (code) => {
-    navigator.clipboard.writeText(`npx flotilla-daemon pair http://localhost:4000 ${code}`);
+    navigator.clipboard.writeText(
+      `npx flotilla-daemon pair ${pairServerUrl ?? 'http://localhost:4000'} ${code}`,
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -97,7 +103,8 @@ export function Agents() {
             {pairCode && (
               <div className="flex flex-1 items-center gap-2 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-1">
                 <code className="min-w-0 flex-1 truncate font-mono text-[11px]">
-                  npx flotilla-daemon pair http://localhost:4000 {pairCode.slice(0, 18)}…
+                  npx flotilla-daemon pair {pairServerUrl ?? 'http://localhost:4000'}{' '}
+                  {pairCode.slice(0, 18)}…
                 </code>
                 <Button variant="ghost" size="sm" onClick={() => copyCmd(pairCode)}>
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
