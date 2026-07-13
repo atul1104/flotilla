@@ -72,13 +72,6 @@ enum AgentStatus {
   offline
 }
 
-enum Runtime {
-  claude_code
-  openai_api
-  codex
-  mock
-}
-
 enum RunStatus {
   queued
   dispatched
@@ -414,7 +407,7 @@ model Agent {
   avatarUrl       String?     @map("avatar_url")
   tagline         String?
   systemPrompt    String?     @map("system_prompt")
-  runtime         Runtime     @default(mock)
+  runtime         String      @default("mock")
   model           String?
   computerId      String?     @map("computer_id") @db.Uuid
   computer        Computer?   @relation(fields: [computerId], references: [id], onDelete: SetNull)
