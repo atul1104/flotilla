@@ -69,7 +69,7 @@ Replication gets us parity; these are the deliberate upgrades, tagged with the p
 | Search | **Postgres full-text search** (`tsvector` + GIN) | No Elasticsearch; upgrade path is pg_trgm, then external if ever needed |
 | Jobs/schedules | **pg-boss** (Postgres-backed job queue) | Avoids adding Redis; handles retention cleanup, cron tasks, digests |
 | Daemon | **Node CLI**, published as npm package (`npx flotilla-daemon`) | Spawns agent runtimes as child processes |
-| Agent runtimes | Adapter interface. **Sole runtime:** `claude-code` (Claude Code headless — `claude -p --output-format stream-json`). **Future:** `openai-api` (OpenAI-compatible chat, no local tools), `anthropic-sdk` (direct Messages API, blocking approval gate) | This is exactly Raft's "bring your own subscription" model |
+| Agent runtimes | Adapter interface. **Sole runtime:** `claude-code` (Claude Code headless — `claude -p --output-format stream-json`) with a blocking PreToolUse-hook approval gate. **Future:** `openai-api` (OpenAI-compatible chat, no local tools) | This is exactly Raft's "bring your own subscription" model |
 | Testing | **Vitest** (unit), **Supertest** (API), **Playwright** (E2E) | |
 | Dev env | **Docker Compose** (Postgres, MinIO) | |
 | Deploy | Single VPS or Railway/Render/Fly to start; Dockerized | Details §15 |
@@ -416,9 +416,10 @@ interface RuntimeAdapter {
 }
 ```
 
-- **`claude-code` adapter (sole runtime):** drives Claude Code headless (Agent SDK / `claude -p --output-format stream-json`) with `cwd = agent workspace`, mapping its permission callback to `requestApproval` (this single hook implements improvement #3 for free). An *agentic* runtime — model + tool loop + file/bash access live inside `claude`; the adapter just spawns it and streams events. Requires the `claude` CLI on PATH + valid credentials.
+- **`claude-code` adapter (sole runtime):** drives Claude Code headless (`claude -p --output-format stream-json`) with `cwd = agent workspace`. An *agentic* runtime — model + tool loop + file/bash access live inside `claude`; the adapter just spawns it and streams events. Requires the `claude` CLI on PATH + valid credentials.
+- **Blocking approval gate (improvement #3):** when an agent's `approvalPolicy` gates any tool, the adapter installs a PreToolUse hook (`.claude/settings.json`) that routes each gated tool call through a per-run UNIX socket back to the adapter, which calls `requestApproval()` and returns allow/deny. Claude waits for the hook process to exit before running the tool (600s default), so the tool is genuinely paused until the human decides and skipped on deny. Hook helper: `adapters/hook-helper.js`. No gate is installed when no policy keys are set.
 - **Removed adapters:** `mock` (scripted, no keys) and `codex` (OpenAI coding-agent CLI) were removed to keep the runtime surface single-vendor. The `mock` runtime was previously the default + CI path; `claude-code` is now the default. E2E tests drive runs via scripted daemon sockets and never invoke the adapter, so CI remains key-free.
-- **Future adapters (not built):** `openai-api` (generic OpenAI-compatible chat API — for non-coding chat/research/summary agents; no local tool use), `anthropic-sdk` (drive the Messages API directly so `requestApproval` actually *blocks* the tool, retiring the `canUseTool`-hook TODO in the adapter header).
+- **Future adapters (not built):** `openai-api` (generic OpenAI-compatible chat API — for non-coding chat/research/summary agents; no local tool use).
 - Concurrency: daemon runs up to N runs in parallel (default 2, configurable); one run per agent at a time — extra triggers queue server-side.
 
 ### 8.4 What triggers a run

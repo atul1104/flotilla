@@ -146,6 +146,7 @@ _Goal (🎉 the demo): @agent in a channel → agent on your laptop streams a re
 
 ### Deviations / notes
 - ⚠️ **claude-code adapter is the sole runtime** and needs the `claude` CLI + credentials to produce real replies. E2E tests drive runs via scripted daemon sockets (never invoking the adapter), so CI stays key-free. The `mock` + `codex` adapters were removed; `claude-code` is the default runtime.
+- **Approval gate now blocks** (previously best-effort): the adapter installs a PreToolUse hook (`.claude/settings.json`) that routes each gated tool call through a per-run UNIX socket back to the adapter, which calls `requestApproval()` and returns allow/deny. Claude waits for the hook to exit before running the tool (600s timeout), so the tool is paused until the human decides and skipped on deny. Hook helper: `adapters/hook-helper.js`.
 - Pairing codes are stateless HMAC tokens (no pairing table); acceptable for beta, one-time-ish (valid 10 min).
 - RunActivity live strip + onboarding funnel (improvement #9) are scaffolded (run events query + lifecycle broadcasts); a full streaming "thinking" accordion + guided onboarding polish are Phase 5/6 follow-ups.
 - `/daemon/pair` migration needed the non-interactive `migrate diff` → `migrate deploy` path (unique-constraint warning); CI uses `migrate deploy` too.
