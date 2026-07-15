@@ -3,9 +3,10 @@
  * stream-json` with cwd = the agent workspace, mapping its permission callback
  * to requestApproval (improvement #3).
  *
- * NOTE: requires the `claude` CLI on PATH (and valid credentials). The mock
- * adapter is the tested path; this is wired but exercised manually. Tune the
- * stream-json event mapping against the runtime you pin.
+ * NOTE: requires the `claude` CLI on PATH (and valid credentials). This is the
+ * sole runtime adapter; tune the stream-json event mapping against the runtime
+ * you pin. E2E tests drive runs via scripted daemon sockets (they don't invoke
+ * this adapter), so CI needs no AI keys.
  *
  * Approval gating: with the `-p` headless CLI the subprocess is non-interactive,
  * so a true block-and-ask gate needs the Claude Agent SDK's `canUseTool` hook

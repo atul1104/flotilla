@@ -81,7 +81,7 @@ describe('agent run end-to-end (paired daemon)', () => {
       body: JSON.stringify({
         name: 'Researcher',
         handle: 'researcher',
-        runtime: 'mock',
+        runtime: 'claude-code',
         tagline: 'summarizes things',
       }),
     });

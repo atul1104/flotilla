@@ -132,7 +132,7 @@ _Goal: coder-agent writes code → hands to reviewer-agent → reviewer requests
 _Goal (🎉 the demo): @agent in a channel → agent on your laptop streams a reply. — **MET (proven end-to-end).**_
 
 ### Built
-- **Prisma** (`add_computers_agents_runs`): `Computer`, `DeviceToken`, `Agent` (+ actor/membership), `AgentRun`, `RunEvent`, `Approval`. New enums: ComputerStatus, AgentStatus, Runtime(+mock), RunStatus, ApprovalDecision.
+- **Prisma** (`add_computers_agents_runs`): `Computer`, `DeviceToken`, `Agent` (+ actor/membership), `AgentRun`, `RunEvent`, `Approval`. New enums: ComputerStatus, AgentStatus, RunStatus, ApprovalDecision. (`Runtime` enum was later dropped — `agents.runtime` is TEXT, single value `claude-code`.)
 - **Computers module**: HMAC-signed stateless pairing codes → `POST /daemon/pair` mints a computer + hashed device token (revocable). `resolveDeviceToken` for socket auth.
 - **Agents module**: CRUD + agent-as-Actor + `role:agent` membership (so agents are @mentionable & can post). `@handle` mention resolution extended to agents.
 - **Runs orchestration**: `triggerRun` (queued → dispatch to the agent's online computer; offline → queued note), event ingestion (deduped on `runId,seq`, status sync), `postAgentMessage` (agent-authored message in the trigger thread, `#general` fallback), `finishRun` (usage + agent idle). @mention of an agent auto-triggers a run.
@@ -145,7 +145,7 @@ _Goal (🎉 the demo): @agent in a channel → agent on your laptop streams a re
 - `npm run lint` ✅ · `npm run format:check` ✅ · web build ✅ · daemon CLI boots.
 
 ### Deviations / notes
-- ⚠️ **claude-code adapter needs the `claude` CLI + credentials** to produce real replies; it's wired but the tested/running path is the **mock** adapter (per §13 "mock-runtime tests keep CI vendor-independent"). Swapping in real keys = data-only change.
+- ⚠️ **claude-code adapter is the sole runtime** and needs the `claude` CLI + credentials to produce real replies. E2E tests drive runs via scripted daemon sockets (never invoking the adapter), so CI stays key-free. The `mock` + `codex` adapters were removed; `claude-code` is the default runtime.
 - Pairing codes are stateless HMAC tokens (no pairing table); acceptable for beta, one-time-ish (valid 10 min).
 - RunActivity live strip + onboarding funnel (improvement #9) are scaffolded (run events query + lifecycle broadcasts); a full streaming "thinking" accordion + guided onboarding polish are Phase 5/6 follow-ups.
 - `/daemon/pair` migration needed the non-interactive `migrate diff` → `migrate deploy` path (unique-constraint warning); CI uses `migrate deploy` too.

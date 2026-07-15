@@ -165,7 +165,7 @@ describe('Phase 6: usage dashboard', () => {
         workspaceId,
         name: 'UsageBot',
         handle: `usagebot-${stamp()}`,
-        runtime: 'mock',
+        runtime: 'claude-code',
         createdBy: userId,
       },
     });
@@ -264,7 +264,7 @@ describe('Phase 6: scheduled tasks (cron)', () => {
         workspaceId,
         name: 'SchedBot',
         handle: `schedbot-${stamp()}`,
-        runtime: 'mock',
+        runtime: 'claude-code',
         createdBy: userId,
       },
     });

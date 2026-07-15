@@ -70,7 +70,7 @@ describe('Phase 8: plan limits', () => {
       const r = await A.post(`/api/v1/workspaces/${workspaceId}/agents`).send({
         name: `Bot ${i}`,
         handle: `bot${i}-${stamp()}`,
-        runtime: 'mock',
+        runtime: 'claude-code',
       });
       expect(r.status).toBe(201);
     }
@@ -78,7 +78,7 @@ describe('Phase 8: plan limits', () => {
     const r = await A.post(`/api/v1/workspaces/${workspaceId}/agents`).send({
       name: 'Bot 4',
       handle: `bot4-${stamp()}`,
-      runtime: 'mock',
+      runtime: 'claude-code',
     });
     expect(r.status).toBe(402);
     expect(r.body.code).toBe('PLAN_LIMIT');
@@ -135,7 +135,7 @@ describe('Phase 8: CSRF content-type check', () => {
     const res = await A.post(`/api/v1/workspaces/${workspaceId}/agents`).send({
       name: 'JSON bot',
       handle: `jsonbot-${stamp()}`,
-      runtime: 'mock',
+      runtime: 'claude-code',
     });
     expect(res.status).toBe(201);
   });

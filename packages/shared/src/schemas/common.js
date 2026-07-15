@@ -74,12 +74,7 @@ export const agentStatusSchema = z.enum([
   AGENT_STATUS.RUNNING,
   AGENT_STATUS.OFFLINE,
 ]);
-export const runtimeSchema = z.enum([
-  RUNTIME.CLAUDE_CODE,
-  RUNTIME.OPENAI_API,
-  RUNTIME.CODEX,
-  RUNTIME.MOCK,
-]);
+export const runtimeSchema = z.enum([RUNTIME.CLAUDE_CODE]);
 export const computerStatusSchema = z.enum([COMPUTER_STATUS.ONLINE, COMPUTER_STATUS.OFFLINE]);
 export const runStatusSchema = z.enum([
   RUN_STATUS.QUEUED,

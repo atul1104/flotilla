@@ -15,14 +15,11 @@
 import { io } from 'socket.io-client';
 import { DAEMON_SOCKET_EVENTS as D } from '@flotilla/shared';
 import { agentDir } from './config.js';
-import { startMockRun } from './adapters/mock.js';
 import { startClaudeCodeRun } from './adapters/claude-code.js';
 import { ensureAgentHome, loadMemory, syncAgentDoc, appendRunLog } from './memory.js';
 
 const ADAPTERS = {
-  mock: startMockRun,
   'claude-code': startClaudeCodeRun,
-  // openai_api / codex adapters land in Phase 6.
 };
 
 export function startDaemon({ serverUrl, token, platform, daemonVersion, name }) {
@@ -59,7 +56,7 @@ export function startDaemon({ serverUrl, token, platform, daemonVersion, name })
     syncAgentDoc(dir, agent.systemPrompt);
     const { memory } = loadMemory(dir);
 
-    const factory = ADAPTERS[agent.runtime] || startMockRun;
+    const factory = ADAPTERS[agent.runtime] || startClaudeCodeRun;
     let seq = 0;
     const nextSeq = () => ++seq;
     const onEvent = (e) =>

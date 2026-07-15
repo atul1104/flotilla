@@ -83,7 +83,7 @@ async function seedTeam(i) {
           workspaceId: ws.id,
           name: `Agent ${a}`,
           handle,
-          runtime: 'mock',
+          runtime: 'claude-code',
           computerId: computer.id,
           createdBy: owner.user.id,
         },

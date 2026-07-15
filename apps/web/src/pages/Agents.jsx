@@ -78,7 +78,7 @@ export function Agents() {
       <div className="border-b border-[var(--color-border)] px-6 py-5">
         <h1 className="text-xl font-bold">Agents & Computers</h1>
         <p className="text-sm text-[var(--color-fg-muted)]">
-          Agents run on your own computers via the daemon. {`(mock runtime for now)`}
+          Agents run on your own computers via the daemon. {`(claude-code runtime)`}
         </p>
       </div>
 
@@ -252,7 +252,7 @@ function CreateAgentDialog({ computers, onClose, onCreate, error }) {
     name: '',
     handle: '',
     tagline: '',
-    runtime: RUNTIME.MOCK,
+    runtime: RUNTIME.CLAUDE_CODE,
     systemPrompt: '',
     computerId: '',
   });
@@ -319,7 +319,6 @@ function CreateAgentDialog({ computers, onClose, onCreate, error }) {
                 value={form.runtime}
                 onChange={(e) => setForm({ ...form, runtime: e.target.value })}
               >
-                <option value="mock">mock (no keys)</option>
                 <option value="claude-code">claude-code</option>
               </select>
             </Field>

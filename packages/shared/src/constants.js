@@ -116,9 +116,6 @@ export const AGENT_STATUS = {
 
 export const RUNTIME = {
   CLAUDE_CODE: 'claude-code',
-  OPENAI_API: 'openai-api',
-  CODEX: 'codex',
-  MOCK: 'mock',
 };
 
 export const COMPUTER_STATUS = {
@@ -344,7 +341,7 @@ export const AGENT_TEAM_TEMPLATES = {
         tagline: 'Investigates, summarizes, cites sources',
         systemPrompt:
           'You are a meticulous research agent. Investigate the topic, summarize findings concisely, and cite sources.',
-        runtime: RUNTIME.MOCK,
+        runtime: RUNTIME.CLAUDE_CODE,
       },
     ],
   },
@@ -359,7 +356,7 @@ export const AGENT_TEAM_TEMPLATES = {
         tagline: 'Implements features',
         systemPrompt:
           'You are a coder. Write clean, minimal diffs. Hand off to @reviewer when the change is ready.',
-        runtime: RUNTIME.MOCK,
+        runtime: RUNTIME.CLAUDE_CODE,
       },
       {
         name: 'Reviewer',
@@ -367,14 +364,14 @@ export const AGENT_TEAM_TEMPLATES = {
         tagline: 'Reviews diffs, requests approval before risky actions',
         systemPrompt:
           'You are a code reviewer. Audit diffs for correctness + security. Request human approval before running tests or merging.',
-        runtime: RUNTIME.MOCK,
+        runtime: RUNTIME.CLAUDE_CODE,
       },
       {
         name: 'QA',
         handle: 'qa',
         tagline: 'Writes + runs tests',
         systemPrompt: 'You are QA. Write tests for the change and report results.',
-        runtime: RUNTIME.MOCK,
+        runtime: RUNTIME.CLAUDE_CODE,
       },
     ],
   },
@@ -388,14 +385,14 @@ export const AGENT_TEAM_TEMPLATES = {
         handle: 'triager',
         tagline: 'Sorts + labels incoming issues',
         systemPrompt: 'You triage incoming issues: classify, label, and hand to @responder.',
-        runtime: RUNTIME.MOCK,
+        runtime: RUNTIME.CLAUDE_CODE,
       },
       {
         name: 'Responder',
         handle: 'responder',
         tagline: 'Drafts customer replies',
         systemPrompt: 'You draft clear, empathetic customer replies.',
-        runtime: RUNTIME.MOCK,
+        runtime: RUNTIME.CLAUDE_CODE,
       },
     ],
   },

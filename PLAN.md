@@ -69,7 +69,7 @@ Replication gets us parity; these are the deliberate upgrades, tagged with the p
 | Search | **Postgres full-text search** (`tsvector` + GIN) | No Elasticsearch; upgrade path is pg_trgm, then external if ever needed |
 | Jobs/schedules | **pg-boss** (Postgres-backed job queue) | Avoids adding Redis; handles retention cleanup, cron tasks, digests |
 | Daemon | **Node CLI**, published as npm package (`npx flotilla-daemon`) | Spawns agent runtimes as child processes |
-| Agent runtimes | Adapter interface. v1: **Claude Agent SDK / Claude Code headless**. v2: OpenAI-compatible API adapter, Codex CLI | This is exactly Raft's "bring your own subscription" model |
+| Agent runtimes | Adapter interface. **Sole runtime:** `claude-code` (Claude Code headless — `claude -p --output-format stream-json`). **Future:** `openai-api` (OpenAI-compatible chat, no local tools), `anthropic-sdk` (direct Messages API, blocking approval gate) | This is exactly Raft's "bring your own subscription" model |
 | Testing | **Vitest** (unit), **Supertest** (API), **Playwright** (E2E) | |
 | Dev env | **Docker Compose** (Postgres, MinIO) | |
 | Deploy | Single VPS or Railway/Render/Fly to start; Dockerized | Details §15 |
@@ -416,8 +416,9 @@ interface RuntimeAdapter {
 }
 ```
 
-- **v1 adapter — `claude-code`:** drives Claude Code headless (Agent SDK / `claude -p --output-format stream-json`) with `cwd = agent workspace`, mapping its permission callback to `requestApproval` (this single hook implements improvement #3 for free).
-- **v2 adapters:** generic OpenAI-compatible chat API (agents without local tool use), Codex CLI.
+- **`claude-code` adapter (sole runtime):** drives Claude Code headless (Agent SDK / `claude -p --output-format stream-json`) with `cwd = agent workspace`, mapping its permission callback to `requestApproval` (this single hook implements improvement #3 for free). An *agentic* runtime — model + tool loop + file/bash access live inside `claude`; the adapter just spawns it and streams events. Requires the `claude` CLI on PATH + valid credentials.
+- **Removed adapters:** `mock` (scripted, no keys) and `codex` (OpenAI coding-agent CLI) were removed to keep the runtime surface single-vendor. The `mock` runtime was previously the default + CI path; `claude-code` is now the default. E2E tests drive runs via scripted daemon sockets and never invoke the adapter, so CI remains key-free.
+- **Future adapters (not built):** `openai-api` (generic OpenAI-compatible chat API — for non-coding chat/research/summary agents; no local tool use), `anthropic-sdk` (drive the Messages API directly so `requestApproval` actually *blocks* the tool, retiring the `canUseTool`-hook TODO in the adapter header).
 - Concurrency: daemon runs up to N runs in parallel (default 2, configurable); one run per agent at a time — extra triggers queue server-side.
 
 ### 8.4 What triggers a run
@@ -535,7 +536,7 @@ SEO basics: meta/OG tags, sitemap, per-section anchors. Blog/docs: defer to Phas
 - **Unit (Vitest):** services (task lifecycle, seat math, plan limits, context assembly), daemon adapter parsing, shared Zod schemas.
 - **API (Supertest + test Postgres in Docker):** auth flows, tenant isolation (the critical suite: user A must never read workspace B), message/task CRUD, pagination.
 - **Realtime:** integration tests with two socket clients + a fake daemon client asserting the event contracts in §7.2/7.3.
-- **Daemon:** adapter tests against a **mock runtime** (scripted stdout of stream-json) so CI never needs real AI keys; one manual smoke script that runs a real Claude Code hello-world.
+- **Daemon:** E2E tests drive runs via scripted daemon sockets (they emit run events directly, never invoking the `claude-code` adapter), so CI never needs real AI keys; one manual smoke script runs a real Claude Code hello-world.
 - **E2E (Playwright):** the golden path — signup → create workspace → pair fake daemon → create agent → @mention it → see streamed reply → task board updates. Run on CI against compose.
 - CI: GitHub Actions — lint, unit, API, E2E on PR. No `tsc` step (plain JS): **ESLint is the static-analysis gate**; Zod schemas catch shape errors at runtime in tests.
 
@@ -597,7 +598,7 @@ Security pass (§11 checklist as an audit), load sanity test (~50 concurrent use
 | Risk | Mitigation |
 |---|---|
 | **Daemon reliability** (sleep, NAT, flaky Wi-Fi) is the hardest engineering problem here | Disk-buffered event queue + seq-based replay (§7.3); aggressive reconnect; runs fail loudly and retryably, never silently |
-| Claude Code CLI/SDK interface changes under us | Adapter interface isolates it; pin versions; mock-runtime tests keep CI independent of the vendor |
+| Claude Code CLI/SDK interface changes under us | Adapter interface isolates it; pin versions; E2E tests use scripted daemon sockets, not the real adapter, so CI stays vendor-independent |
 | Runaway agent loops burn users' tokens | Chain-depth cap, hourly run caps, one-run-per-agent, cost dashboard makes spend visible |
 | Chat UI scope creep (Slack took years) | Ruthless v1 cut: no voice/huddles, no custom emoji, no message forwarding, no apps directory |
 | Solo burnout / phases slip | Each phase ends demoable; if Phase 4 slips, everything after shifts — never work on two phases at once |

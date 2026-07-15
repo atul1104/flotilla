@@ -120,7 +120,7 @@ async function main() {
         handle: 'researcher',
         tagline: 'Investigates, summarizes, cites sources',
         systemPrompt: 'You are a meticulous research agent.',
-        runtime: 'mock',
+        runtime: 'claude-code',
         computerId: computer.id,
         createdBy: alice.user.id,
       },

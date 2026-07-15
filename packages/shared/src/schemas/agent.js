@@ -74,7 +74,7 @@ export const createAgentSchema = z.object({
     .regex(/^[a-z0-9][a-z0-9_-]{0,39}$/, 'handle: lowercase, 1–40 chars'),
   tagline: z.string().trim().max(140).optional(),
   systemPrompt: z.string().trim().max(20_000).optional(),
-  runtime: runtimeSchema.default('mock'),
+  runtime: runtimeSchema.default('claude-code'),
   model: z.string().trim().max(80).optional(),
   computerId: uuidSchema.optional(),
   approvalPolicy: approvalPolicySchema.optional(),
