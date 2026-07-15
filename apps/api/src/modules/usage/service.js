@@ -5,7 +5,7 @@
  * used for date-truncation + BigInt sums (Prisma can't group by date natively).
  */
 import { prisma } from '../../lib/db.js';
-import { USAGE } from '@flotila-org/shared';
+import { USAGE } from '@atul1104/shared';
 
 const toNum = (v) => Number(v ?? 0);
 

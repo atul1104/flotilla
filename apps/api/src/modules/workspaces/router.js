@@ -12,8 +12,8 @@ import {
   updateWorkspaceSchema,
   createInviteSchema,
   acceptInviteSchema,
-} from '@flotila-org/shared';
-import { WORKSPACE_ROLE } from '@flotila-org/shared';
+} from '@atul1104/shared';
+import { WORKSPACE_ROLE } from '@atul1104/shared';
 import * as ws from './service.js';
 import { sendMail } from '../../lib/mailer.js';
 import { config } from '../../config.js';

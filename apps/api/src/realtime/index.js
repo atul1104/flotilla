@@ -13,7 +13,7 @@ import { Server } from 'socket.io';
 import { sessionMiddleware } from '../lib/session.js';
 import { prisma } from '../lib/db.js';
 import { logger } from '../lib/logger.js';
-import { CLIENT_SOCKET_EVENTS, DAEMON_SOCKET_EVENTS, HEARTBEAT } from '@flotila-org/shared';
+import { CLIENT_SOCKET_EVENTS, DAEMON_SOCKET_EVENTS, HEARTBEAT } from '@atul1104/shared';
 import { listWorkspacesForActor } from '../modules/workspaces/service.js';
 import { markRead } from '../modules/channels/service.js';
 import { resolveDeviceToken, markOnline, markOffline } from '../modules/computers/service.js';

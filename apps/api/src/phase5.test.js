@@ -13,7 +13,7 @@ import http from 'node:http';
 import { io } from 'socket.io-client';
 import { createApp } from './app.js';
 import { initRealtime } from './realtime/index.js';
-import { DAEMON_SOCKET_EVENTS as D, AGENT_LOOP_LIMITS } from '@flotila-org/shared';
+import { DAEMON_SOCKET_EVENTS as D, AGENT_LOOP_LIMITS } from '@atul1104/shared';
 import { prisma } from './lib/db.js';
 
 const stamp = () => Date.now().toString(36);

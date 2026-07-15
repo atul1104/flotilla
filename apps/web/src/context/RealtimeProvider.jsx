@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { connectSocket, disconnectSocket } from '../lib/socket';
-import { CLIENT_SOCKET_EVENTS as E } from '@flotila-org/shared';
+import { CLIENT_SOCKET_EVENTS as E } from '@atul1104/shared';
 
 /**
  * Connects the /client socket while authenticated and patches the TanStack

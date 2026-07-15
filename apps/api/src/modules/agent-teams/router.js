@@ -6,7 +6,7 @@ import { asyncHandler } from '../../lib/asyncHandler.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { requireWorkspaceMember } from '../../middleware/workspace.js';
 import { validateBody } from '../../middleware/validate.js';
-import { agentTeamSchema } from '@flotila-org/shared';
+import { agentTeamSchema } from '@atul1104/shared';
 import * as svc from './service.js';
 
 export const router = Router();

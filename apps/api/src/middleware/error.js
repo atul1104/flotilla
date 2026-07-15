@@ -2,7 +2,7 @@
  * Central error handler. Maps AppError -> status/body; logs unknowns.
  * Must be registered last (after all routes + notFound).
  */
-import { AppError, toAppError } from '@flotila-org/shared';
+import { AppError, toAppError } from '@atul1104/shared';
 import { logger } from '../lib/logger.js';
 import { config } from '../config.js';
 import { captureError } from '../lib/sentry.js';

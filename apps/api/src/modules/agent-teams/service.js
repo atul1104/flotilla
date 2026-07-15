@@ -4,7 +4,7 @@
  * the workspace are resolved by suffixing (-2, -3, …) so re-applying a template
  * is idempotent-ish rather than erroring.
  */
-import { AGENT_TEAM_TEMPLATES, NotFoundError } from '@flotila-org/shared';
+import { AGENT_TEAM_TEMPLATES, NotFoundError } from '@atul1104/shared';
 import { prisma } from '../../lib/db.js';
 import { createAgent } from '../agents/service.js';
 

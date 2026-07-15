@@ -3,7 +3,7 @@
  * front (messageId null) and connected when the message is sent (PLAN.md §7.1).
  */
 import { prisma } from '../../lib/db.js';
-import { ValidationError } from '@flotila-org/shared';
+import { ValidationError } from '@atul1104/shared';
 import { presignUpload, buildStorageKey } from '../../lib/storage.js';
 import { assertUploadQuota } from '../../lib/limits.js';
 

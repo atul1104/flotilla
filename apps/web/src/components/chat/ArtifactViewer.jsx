@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { FileCode, ChevronDown, ChevronRight, Image as ImageIcon } from 'lucide-react';
-import { ARTIFACT_TYPE } from '@flotila-org/shared';
+import { ARTIFACT_TYPE } from '@atul1104/shared';
 
 /**
  * Inline artifact review (improvement #6). Renders a structured payload

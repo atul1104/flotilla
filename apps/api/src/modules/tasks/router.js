@@ -12,7 +12,7 @@ import {
   updateTaskSchema,
   handoffSchema,
   taskQuerySchema,
-} from '@flotila-org/shared';
+} from '@atul1104/shared';
 import * as svc from './service.js';
 import { serializeMessage } from '../messages/service.js';
 import * as runs from '../runs/service.js';

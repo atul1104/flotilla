@@ -5,7 +5,7 @@ import { useMembers } from '../../hooks/api';
 import { useAuth } from '../../context/AuthProvider';
 import { api } from '../../lib/api';
 import { getSocket } from '../../lib/socket';
-import { CLIENT_SOCKET_EVENTS } from '@flotila-org/shared';
+import { CLIENT_SOCKET_EVENTS } from '@atul1104/shared';
 
 const norm = (s) =>
   String(s || '')

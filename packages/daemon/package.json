@@ -1,5 +1,5 @@
 {
-  "name": "@flotila-org/daemon",
+  "name": "@atul1104/daemon",
   "version": "0.1.0",
   "type": "module",
   "description": "Flotilla local daemon CLI — pairs, receives agent runs, spawns runtime adapters.",

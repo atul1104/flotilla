@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from './app.js';
 import { prisma } from './lib/db.js';
-import { PLAN_LIMITS } from '@flotila-org/shared';
+import { PLAN_LIMITS } from '@atul1104/shared';
 import { getOnboarding, markOnboardingStep } from './modules/workspaces/onboarding.js';
 import { historyCutoff, isReadable, limitsForPlan } from './lib/limits.js';
 

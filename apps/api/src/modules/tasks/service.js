@@ -4,8 +4,8 @@
  * message acts as the task's discussion thread root).
  */
 import { prisma } from '../../lib/db.js';
-import { NotFoundError, ConflictError } from '@flotila-org/shared';
-import { TASK_STATUS } from '@flotila-org/shared';
+import { NotFoundError, ConflictError } from '@atul1104/shared';
+import { TASK_STATUS } from '@atul1104/shared';
 
 function serializeActor(actor) {
   if (!actor) return null;

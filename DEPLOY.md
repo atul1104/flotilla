@@ -40,7 +40,7 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
 | File storage | Cloudflare R2 free | $0 | 10 GB + free egress. |
 | Email | Resend free | $0 | 3,000/mo, 100/day. SMTP interface. |
 | Landing site | Netlify free | $0 | `apps/landing` only (optional, separate origin). |
-| Daemon | npm | $0 | `npm publish @flotila-org/daemon` so `npx` works. |
+| Daemon | npm | $0 | `npm publish @atul1104/daemon` so `npx` works. |
 | Custom domain | any registrar | ~$10–15/yr | Optional but recommended for a clean URL. |
 
 ---
@@ -137,7 +137,7 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
    `APP_ORIGIN` / `API_ORIGIN` to match.
 2. **Publish the daemon** so beta users can pair their computers:
    ```bash
-   npm version patch && npm publish --workspace @flotila-org/daemon
+   npm version patch && npm publish --workspace @atul1104/daemon
    ```
    Then a user runs:
    ```bash
@@ -152,7 +152,7 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
    ```
    Skip this for a clean prod DB and create workspaces via the app instead.
 4. **Landing site** (optional): deploy `apps/landing` to Netlify as a static site
-   (build `npm run build --workspace @flotila-org/landing`, publish `apps/landing/dist`).
+   (build `npm run build --workspace @atul1104/landing`, publish `apps/landing/dist`).
 
 ---
 
@@ -180,7 +180,7 @@ end to end.
 - **Don't run the test suite against the prod DB.** `npm test` loads `apps/api/.env`,
   so if `DATABASE_URL` points at Neon it will run — and pollute Neon with test
   workspaces. Keep a local Postgres for dev/test; put the Neon URL only in Railway.
-- **Locally, boot via the workspace script** (`npm start --workspace @flotila-org/api` or
+- **Locally, boot via the workspace script** (`npm start --workspace @atul1104/api` or
   `npm run dev`), not `node apps/api/src/server.js` from the repo root — `dotenv`
   loads `.env` from the current directory, and `.env` lives in `apps/api/`.
 - **Neon cold starts:** the free tier autosuspends after idle; the first request after

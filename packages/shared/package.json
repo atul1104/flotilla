@@ -1,5 +1,5 @@
 {
-  "name": "@flotila-org/shared",
+  "name": "@atul1104/shared",
   "version": "0.1.0",
   "type": "module",
   "description": "Shared Zod schemas, constants, and socket event names — the cross-package contract layer.",

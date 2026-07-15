@@ -13,9 +13,9 @@
   },
   "scripts": {
     "dev": "concurrently -n api,web,landing -c blue,magenta,cyan \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:landing\"",
-    "dev:api": "npm run dev --workspace @flotila-org/api",
-    "dev:web": "npm run dev --workspace @flotila-org/web",
-    "dev:landing": "npm run dev --workspace @flotila-org/landing",
+    "dev:api": "npm run dev --workspace @atul1104/api",
+    "dev:web": "npm run dev --workspace @atul1104/web",
+    "dev:landing": "npm run dev --workspace @atul1104/landing",
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -25,10 +25,10 @@
     "start": "node apps/api/src/server.js",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:migrate": "npm run db:migrate --workspace @flotila-org/api",
-    "db:migrate:deploy": "npm run db:migrate:deploy --workspace @flotila-org/api",
-    "db:generate": "npm run db:generate --workspace @flotila-org/api",
-    "db:seed": "npm run db:seed --workspace @flotila-org/api"
+    "db:migrate": "npm run db:migrate --workspace @atul1104/api",
+    "db:migrate:deploy": "npm run db:migrate:deploy --workspace @atul1104/api",
+    "db:generate": "npm run db:generate --workspace @atul1104/api",
+    "db:seed": "npm run db:seed --workspace @atul1104/api"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

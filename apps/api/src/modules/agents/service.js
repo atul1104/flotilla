@@ -3,8 +3,8 @@
  * + a workspace member (role=agent) so it can be @mentioned and post messages.
  */
 import { prisma } from '../../lib/db.js';
-import { ConflictError, NotFoundError, ValidationError } from '@flotila-org/shared';
-import { WORKSPACE_ROLE, ACTOR_KIND, DEFAULTS, DEFAULT_APPROVAL_POLICY } from '@flotila-org/shared';
+import { ConflictError, NotFoundError, ValidationError } from '@atul1104/shared';
+import { WORKSPACE_ROLE, ACTOR_KIND, DEFAULTS, DEFAULT_APPROVAL_POLICY } from '@atul1104/shared';
 import { assertAgentCap } from '../../lib/limits.js';
 import { markOnboardingStep } from '../workspaces/onboarding.js';
 

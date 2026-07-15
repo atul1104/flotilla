@@ -1,6 +1,6 @@
 /**
- * @flotila-org/shared — shared contract layer for app / api / daemon.
- * Import as `@flotila-org/shared` (PLAN.md §3, §6).
+ * @atul1104/shared — shared contract layer for app / api / daemon.
+ * Import as `@atul1104/shared` (PLAN.md §3, §6).
  */
 export * from './constants.js';
 export * from './errors.js';

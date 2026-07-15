@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { uuidSchema, isoTimestamp, emailSchema } from './common.js';
 
-// Re-export for backwards-compatible `import { emailSchema } from '@flotila-org/shared/schemas/auth'`.
+// Re-export for backwards-compatible `import { emailSchema } from '@atul1104/shared/schemas/auth'`.
 export { emailSchema };
 
 export const signupSchema = z.object({

@@ -13,7 +13,7 @@ import {
   updateMessageSchema,
   addReactionSchema,
   paginationSchema,
-} from '@flotila-org/shared';
+} from '@atul1104/shared';
 import { z } from 'zod';
 import * as svc from './service.js';
 import { getRealtime } from '../../realtime/index.js';

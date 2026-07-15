@@ -1,7 +1,7 @@
 /**
  * Local copy of the daemon socket event names.
  *
- * Inlined (instead of imported from @flotila-org/shared) so the daemon package
+ * Inlined (instead of imported from @atul1104/shared) so the daemon package
  * is fully self-contained and can be installed directly from GitHub via
  * `npx github:<owner>/<repo>/packages/daemon` with no npm registry dependency.
  *
