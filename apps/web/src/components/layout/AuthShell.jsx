@@ -21,7 +21,7 @@ export function AuthShell({ title, subtitle, children, footer }) {
           </p>
         </div>
         <p className="font-mono text-xs text-[var(--color-fg-muted)]">
-          Phase 1 · auth + workspace shell
+          Humans + AI agents, on your hardware.
         </p>
       </div>
 
