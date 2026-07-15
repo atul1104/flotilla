@@ -14,15 +14,15 @@
  *   - Retry: re-dispatch a finished run as a fresh attempt.
  */
 import { prisma } from '../../lib/db.js';
-import { NotFoundError, ConflictError, RunRefusedError } from '@flotilla/shared';
+import { NotFoundError, ConflictError, RunRefusedError } from '@flotila-org/shared';
 import {
   RUN_STATUS,
   RUN_EVENT_TYPE,
   RUN_TRIGGER,
   AGENT_LOOP_LIMITS,
   MESSAGE_PAYLOAD_TYPE,
-} from '@flotilla/shared';
-import { approvalRequestPayloadSchema } from '@flotilla/shared';
+} from '@flotila-org/shared';
+import { approvalRequestPayloadSchema } from '@flotila-org/shared';
 import { createMessage } from '../messages/service.js';
 import { createSubtask } from '../tasks/service.js';
 import { markOnboardingStep } from '../workspaces/onboarding.js';
@@ -571,7 +571,7 @@ export async function finishRun(runId, status, usage, error) {
   const tokensIn = Number(usage?.tokensIn ?? 0);
   const tokensOut = Number(usage?.tokensOut ?? 0);
   const costCents = usage
-    ? (await import('@flotilla/shared')).estimateCostCents(run.model, tokensIn, tokensOut)
+    ? (await import('@flotila-org/shared')).estimateCostCents(run.model, tokensIn, tokensOut)
     : undefined;
   const updated = await prisma.agentRun.update({
     where: { id: runId },

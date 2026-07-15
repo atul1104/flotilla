@@ -6,7 +6,7 @@ import { asyncHandler } from '../../lib/asyncHandler.js';
 import { validateBody } from '../../middleware/validate.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { requireWorkspaceMember } from '../../middleware/workspace.js';
-import { createAgentSchema, updateAgentSchema } from '@flotilla/shared';
+import { createAgentSchema, updateAgentSchema } from '@flotila-org/shared';
 import * as svc from './service.js';
 import * as runs from '../runs/service.js';
 

@@ -5,7 +5,7 @@
  */
 import argon2 from 'argon2';
 import { prisma } from '../../lib/db.js';
-import { ConflictError, UnauthorizedError, NotFoundError } from '@flotilla/shared';
+import { ConflictError, UnauthorizedError, NotFoundError } from '@flotila-org/shared';
 import { randomToken, hashToken } from '../../lib/tokens.js';
 import { sendMail } from '../../lib/mailer.js';
 import { logger } from '../../lib/logger.js';

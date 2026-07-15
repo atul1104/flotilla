@@ -3,7 +3,7 @@
  * threads, reactions (aggregated), and server-side mention parsing.
  */
 import { prisma } from '../../lib/db.js';
-import { NotFoundError, ForbiddenError } from '@flotilla/shared';
+import { NotFoundError, ForbiddenError } from '@flotila-org/shared';
 import { historyCutoff } from '../../lib/limits.js';
 
 const MENTION_RE = /(^|\s)@([a-z0-9_.-]+)/gi;

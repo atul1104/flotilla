@@ -24,7 +24,7 @@ import {
   useTeamTemplates,
   useCreateTeam,
 } from '../hooks/api';
-import { RUNTIME, APPROVAL_POLICY_KEYS } from '@flotilla/shared';
+import { RUNTIME, APPROVAL_POLICY_KEYS } from '@flotila-org/shared';
 
 const POLICY_LABELS = {
   [APPROVAL_POLICY_KEYS.SHELL]: 'Shell commands',
@@ -61,7 +61,7 @@ export function Agents() {
 
   const copyCmd = (code) => {
     navigator.clipboard.writeText(
-      `npx flotilla-daemon pair ${pairServerUrl ?? 'http://localhost:4000'} ${code}`,
+      `npx github:atul1104/flotilla/packages/daemon pair ${pairServerUrl ?? 'http://localhost:4000'} ${code}`,
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
@@ -103,7 +103,7 @@ export function Agents() {
             {pairCode && (
               <div className="flex flex-1 items-center gap-2 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-1">
                 <code className="min-w-0 flex-1 truncate font-mono text-[11px]">
-                  npx flotilla-daemon pair {pairServerUrl ?? 'http://localhost:4000'}{' '}
+                  npx github:atul1104/flotilla/packages/daemon pair {pairServerUrl ?? 'http://localhost:4000'}{' '}
                   {pairCode.slice(0, 18)}…
                 </code>
                 <Button variant="ghost" size="sm" onClick={() => copyCmd(pairCode)}>

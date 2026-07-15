@@ -5,8 +5,8 @@
  * of actors.
  */
 import { prisma } from '../../lib/db.js';
-import { ConflictError } from '@flotilla/shared';
-import { CHANNEL_KIND } from '@flotilla/shared';
+import { ConflictError } from '@flotila-org/shared';
+import { CHANNEL_KIND } from '@flotila-org/shared';
 
 /** Can this actor see this channel? (public = any workspace member; else member) */
 export async function canSeeChannel(channelId, actorId) {

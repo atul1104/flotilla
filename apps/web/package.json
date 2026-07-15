@@ -1,5 +1,5 @@
 {
-  "name": "@flotilla/web",
+  "name": "@flotila-org/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "preview": "vite preview --port 5173"
   },
   "dependencies": {
-    "@flotilla/shared": "*",
+    "@flotila-org/shared": "*",
     "@sentry/react": "^10.65.0",
     "@tanstack/react-query": "^5.62.7",
     "@tanstack/react-query-devtools": "^5.62.7",

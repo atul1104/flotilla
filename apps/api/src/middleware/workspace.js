@@ -4,9 +4,9 @@
  * `req.workspace` + `req.membership`. This is tenant isolation — the #1 bug
  * class in chat apps (PLAN.md §11, §13). Test it explicitly.
  */
-import { ForbiddenError, NotFoundError } from '@flotilla/shared';
+import { ForbiddenError, NotFoundError } from '@flotila-org/shared';
 import { prisma } from '../lib/db.js';
-import { ROLE_RANK, WORKSPACE_ROLE } from '@flotilla/shared';
+import { ROLE_RANK, WORKSPACE_ROLE } from '@flotila-org/shared';
 import { asyncHandler } from '../lib/asyncHandler.js';
 
 function resolveId(req) {

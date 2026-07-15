@@ -1,13 +1,13 @@
 /**
  * Plan-limit enforcement (PLAN.md §6 — "Plan limits enforced from day one").
- * The limits live in @flotilla/shared PLAN_LIMITS; this module is the single
+ * The limits live in @flotila-org/shared PLAN_LIMITS; this module is the single
  * place that resolves a workspace's plan to its limits and exposes check helpers
  * so the rules aren't scattered across modules. Free plans gate; Pro/Enterprise
  * are uncapped (Infinity).
  */
-import { PLAN_LIMITS, PLANS } from '@flotilla/shared';
+import { PLAN_LIMITS, PLANS } from '@flotila-org/shared';
 import { prisma } from './db.js';
-import { PaymentRequiredError } from '@flotilla/shared';
+import { PaymentRequiredError } from '@flotila-org/shared';
 
 export function limitsForPlan(plan) {
   return PLAN_LIMITS[plan] ?? PLAN_LIMITS[PLANS.FREE];

@@ -6,7 +6,7 @@ import { asyncHandler } from '../../lib/asyncHandler.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { requireWorkspaceMember } from '../../middleware/workspace.js';
 import { validateQuery } from '../../middleware/validate.js';
-import { searchQuerySchema } from '@flotilla/shared';
+import { searchQuerySchema } from '@flotila-org/shared';
 import * as svc from './service.js';
 
 export const router = Router();

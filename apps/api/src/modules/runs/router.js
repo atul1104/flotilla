@@ -7,7 +7,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../../lib/asyncHandler.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateBody } from '../../middleware/validate.js';
-import { decideApprovalSchema } from '@flotilla/shared';
+import { decideApprovalSchema } from '@flotila-org/shared';
 import * as svc from './service.js';
 import { prisma } from '../../lib/db.js';
 

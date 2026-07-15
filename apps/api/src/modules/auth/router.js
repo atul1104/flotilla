@@ -14,7 +14,7 @@ import {
   verifyEmailSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-} from '@flotilla/shared';
+} from '@flotila-org/shared';
 import * as authService from './service.js';
 
 export const router = Router();

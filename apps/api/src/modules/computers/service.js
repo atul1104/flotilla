@@ -5,7 +5,7 @@
  */
 import { createHmac } from 'node:crypto';
 import { prisma } from '../../lib/db.js';
-import { NotFoundError, ConflictError } from '@flotilla/shared';
+import { NotFoundError, ConflictError } from '@flotila-org/shared';
 import { randomToken, hashToken, safeEqual } from '../../lib/tokens.js';
 import { config } from '../../config.js';
 import { markOnboardingStep } from '../workspaces/onboarding.js';

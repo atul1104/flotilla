@@ -8,7 +8,7 @@ import { validateBody } from '../../middleware/validate.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { requireWorkspaceMember } from '../../middleware/workspace.js';
 import { requireChannelAccess } from '../../middleware/channel.js';
-import { createChannelSchema, updateChannelSchema, paginationSchema } from '@flotilla/shared';
+import { createChannelSchema, updateChannelSchema, paginationSchema } from '@flotila-org/shared';
 import { z } from 'zod';
 import * as svc from './service.js';
 

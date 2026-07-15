@@ -13,7 +13,7 @@
  *    the server relays `approval.decision` (improvement #3).
  */
 import { io } from 'socket.io-client';
-import { DAEMON_SOCKET_EVENTS as D } from '@flotilla/shared';
+import { DAEMON_SOCKET_EVENTS as D } from './socket-events.js';
 import { agentDir } from './config.js';
 import { startClaudeCodeRun } from './adapters/claude-code.js';
 import { ensureAgentHome, loadMemory, syncAgentDoc, appendRunLog } from './memory.js';

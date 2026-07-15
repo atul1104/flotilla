@@ -8,7 +8,7 @@ Implementation journal for the plan in [`PLAN.md`](./PLAN.md). Append a dated en
 
 ## Environment notes (2026-07-12)
 
-- Working dir: `/Users/moofwd/Documents/raft` (folder named `raft`; project codename **Flotilla**, package names `@flotilla/*`).
+- Working dir: `/Users/moofwd/Documents/raft` (folder named `raft`; project codename **Flotilla**, package names `@flotila-org/*`).
 - Local Node **v20.19.4** (plan §3 targets Node 22 LTS). Express 5 / Prisma / Vite all run on Node 20; `engines` set to `>=20`. Upgrade to 22 on the build host before beta — tracked in Phase 8.
 - Toolchain present: npm 10.8.2, git 2.50, Docker 27.4 + Compose v2.31.
 - Ultracode session: phase work driven directly (foundational scaffolding is tightly coupled); workflows used at phase boundaries for verification/review.
@@ -26,7 +26,7 @@ _Goal: ship real testimonials on the landing site (Phase 8 beta collection; the 
 - **Page shell** (`App.jsx` + `ThemeToggle.jsx`): sticky nav (wordmark, theme toggle, "Open the app" CTA) + footer. Hero/pricing/FAQ remain Phase 7. Theme set pre-paint from `localStorage` / `prefers-color-scheme` / `?theme=light|dark`; toggle persists.
 
 ### Verified
-- `npm run build --workspace @flotilla/landing` ✅ (CSS 13 kB / JS 157 kB · gzip 51 kB).
+- `npm run build --workspace @flotila-org/landing` ✅ (CSS 13 kB / JS 157 kB · gzip 51 kB).
 - `npm run lint` ✅ (0 errors; the 2 remaining warnings are pre-existing in `sw.js`/`daemon`) · `npm run format:check` ✅.
 - Visual: headless-Chrome screenshots confirm light, dark, and mobile (390 px) render on-brand and responsive.
 
@@ -137,7 +137,7 @@ _Goal (🎉 the demo): @agent in a channel → agent on your laptop streams a re
 - **Agents module**: CRUD + agent-as-Actor + `role:agent` membership (so agents are @mentionable & can post). `@handle` mention resolution extended to agents.
 - **Runs orchestration**: `triggerRun` (queued → dispatch to the agent's online computer; offline → queued note), event ingestion (deduped on `runId,seq`, status sync), `postAgentMessage` (agent-authored message in the trigger thread, `#general` fallback), `finishRun` (usage + agent idle). @mention of an agent auto-triggers a run.
 - **`/daemon` namespace**: device-token auth, heartbeat/presence (online/offline + agent status), `run.dispatch`/`run.cancel`, and `run.event`/`run.message`/`run.finished` ingestion with a per-socket `computerId` ownership guard.
-- **Daemon package** (`@flotilla/daemon`): real CLI — `pair <server> <code>` (exchanges code → token, stores `~/.flotilla/config.json`) and `start` (connects `/daemon`, spawns runtime adapters, streams events back). **Mock adapter** (scripted stream + reply, no keys) + **claude-code adapter** (spawns `claude -p --output-format stream-json`; needs the binary). `~/.flotilla/agents/<handle>/` agent home.
+- **Daemon package** (`@flotila-org/daemon`): real CLI — `pair <server> <code>` (exchanges code → token, stores `~/.flotilla/config.json`) and `start` (connects `/daemon`, spawns runtime adapters, streams events back). **Mock adapter** (scripted stream + reply, no keys) + **claude-code adapter** (spawns `claude -p --output-format stream-json`; needs the binary). `~/.flotilla/agents/<handle>/` agent home.
 - **Frontend**: Agents & Computers page (pairing-code → copyable `npx flotilla-daemon pair …`, computer list + revoke, agent CRUD + **Test** fire-run button); sidebar Agents nav; run-lifecycle socket events wired into the cache.
 
 ### Verified

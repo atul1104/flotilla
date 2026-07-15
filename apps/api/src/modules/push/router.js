@@ -7,7 +7,7 @@ import { asyncHandler } from '../../lib/asyncHandler.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validateBody } from '../../middleware/validate.js';
 import { z } from 'zod';
-import { pushSubscribeSchema } from '@flotilla/shared';
+import { pushSubscribeSchema } from '@flotila-org/shared';
 import * as svc from './service.js';
 
 export const router = Router();

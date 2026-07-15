@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from './app.js';
 import { prisma } from './lib/db.js';
-import { cronDue, parseCron } from '@flotilla/shared';
+import { cronDue, parseCron } from '@flotila-org/shared';
 import { fireScheduledTasks } from './modules/jobs/scheduled-tasks.js';
 import { createNotification, listNotifications } from './modules/notifications/service.js';
 import { search } from './modules/search/service.js';

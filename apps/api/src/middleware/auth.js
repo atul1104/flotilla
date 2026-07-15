@@ -2,7 +2,7 @@
  * Auth middleware. Session-backed (PLAN.md §11). Attaches the current user +
  * actor to the request. Role gating lives in workspace.js (needs membership).
  */
-import { UnauthorizedError } from '@flotilla/shared';
+import { UnauthorizedError } from '@flotila-org/shared';
 import { prisma } from '../lib/db.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
 

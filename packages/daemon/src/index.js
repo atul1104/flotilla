@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * @flotilla/daemon — local daemon CLI (PLAN.md §8.1).
+ * @flotila-org/daemon — local daemon CLI (PLAN.md §8.1).
  *
  *   flotilla-daemon pair <serverUrl> <code> [--name "My laptop"]
  *   flotilla-daemon start [--server <url>] [--name "My laptop"]
@@ -94,7 +94,7 @@ function installService() {
   }
   const home = homedir();
   const plat = platform();
-  const cmd = `npx flotilla-daemon start --server ${cfg.serverUrl}`;
+  const cmd = `npx github:atul1104/flotilla/packages/daemon start --server ${cfg.serverUrl}`;
 
   if (plat === 'darwin') {
     const dir = join(home, 'Library', 'LaunchAgents');

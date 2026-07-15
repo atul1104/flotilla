@@ -2,7 +2,7 @@
  * Zod validation middleware factories. Validate `body` / `query` / `params`
  * against a Zod schema; on failure throws a ValidationError (400) with details.
  */
-import { ValidationError } from '@flotilla/shared';
+import { ValidationError } from '@flotila-org/shared';
 
 function validatePart(schema, part) {
   return (req, _res, next) => {

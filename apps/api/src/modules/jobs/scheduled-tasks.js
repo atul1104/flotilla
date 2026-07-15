@@ -3,10 +3,10 @@
  * scheduled-task-tick pg-boss job calls fireScheduledTasks() each minute; it
  * evaluates each task's cron against the current minute (cronDue) and triggers a
  * run for the task's agent assignee, recording lastFiredAt so a tick never
- * double-fires. Pure cron math lives in @flotilla/shared (cron.js).
+ * double-fires. Pure cron math lives in @flotila-org/shared (cron.js).
  */
 import { prisma } from '../../lib/db.js';
-import { cronDue } from '@flotilla/shared';
+import { cronDue } from '@flotila-org/shared';
 import * as runs from '../runs/service.js';
 import { logger } from '../../lib/logger.js';
 

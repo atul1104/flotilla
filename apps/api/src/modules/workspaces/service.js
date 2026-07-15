@@ -3,8 +3,8 @@
  * Services are unit-testable; routers stay thin (PLAN.md §5).
  */
 import { prisma } from '../../lib/db.js';
-import { ConflictError, NotFoundError, ForbiddenError } from '@flotilla/shared';
-import { WORKSPACE_ROLE, CHANNEL_KIND } from '@flotilla/shared';
+import { ConflictError, NotFoundError, ForbiddenError } from '@flotila-org/shared';
+import { WORKSPACE_ROLE, CHANNEL_KIND } from '@flotila-org/shared';
 import { slugify, uniqueSlug } from '../../lib/slug.js';
 import { randomToken, hashToken } from '../../lib/tokens.js';
 

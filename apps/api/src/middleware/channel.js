@@ -3,8 +3,8 @@
  * actor is a member of its workspace, and (for private/DM) a channel member.
  * Attaches `req.channel`. This is the tenant boundary for chat routes.
  */
-import { ForbiddenError, NotFoundError } from '@flotilla/shared';
-import { CHANNEL_KIND } from '@flotilla/shared';
+import { ForbiddenError, NotFoundError } from '@flotila-org/shared';
+import { CHANNEL_KIND } from '@flotila-org/shared';
 import { prisma } from '../lib/db.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
 

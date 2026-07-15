@@ -7,7 +7,7 @@ import { asyncHandler } from '../../lib/asyncHandler.js';
 import { validateBody } from '../../middleware/validate.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { requireWorkspaceMember } from '../../middleware/workspace.js';
-import { pairSchema } from '@flotilla/shared';
+import { pairSchema } from '@flotila-org/shared';
 import { config } from '../../config.js';
 import * as svc from './service.js';
 

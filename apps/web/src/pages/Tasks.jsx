@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Plus, Columns, List as ListIcon, Clock } from 'lucide-react';
-import { TASK_BOARD_COLUMNS, TASK_STATUS } from '@flotilla/shared';
+import { TASK_BOARD_COLUMNS, TASK_STATUS } from '@flotila-org/shared';
 import { useTasks, useTaskMutations, useTaskEvents } from '../hooks/api';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Button';
