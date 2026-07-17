@@ -1,0 +1,25 @@
+# Railway deployment config for the Flotilla API service.
+# Version-controlled so build/start/release commands track the repo (scope renames
+# etc. update here via git, not silently in the dashboard). See DEPLOY.md for the
+# full deployment guide.
+
+# Node 22 (matches .nvmrc and CI).
+[build]
+builder = "nixpacks"
+nixpacksVersion = "0.5.0"
+
+# Build all workspaces — the API serves apps/web/dist in prod, so web must build too.
+# Root `npm run build` runs `npm run build --workspaces --if-present`.
+buildCommand = "npm run build"
+
+[deploy]
+# Root `npm start` → node apps/api/src/server.js (reads PORT from the env).
+startCommand = "npm start"
+# Run Prisma migrations before the app boots. Root script targets @atul1104/api.
+deployCommand = "npm run db:migrate:deploy"
+# Health endpoint per DEPLOY.md — returns 200 {status: ok}, 503 on DB failure.
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+# Restart policy: Railway's default is fine.
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
