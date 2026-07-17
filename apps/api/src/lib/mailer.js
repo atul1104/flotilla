@@ -24,10 +24,14 @@ export async function sendMail({ to, subject, html, text }) {
   });
 }
 
-/** Verify SMTP connectivity on boot (non-fatal if it fails). */
+/** Verify SMTP connectivity on boot (non-fatal if it fails). Times out after 5s
+ *  so an unreachable SMTP host (e.g. no Mailpit in prod) can't stall boot. */
 export async function verifyMailer() {
   try {
-    await transporter.verify();
+    await Promise.race([
+      transporter.verify(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('verify timeout')), 5000)),
+    ]);
     return true;
   } catch {
     return false;

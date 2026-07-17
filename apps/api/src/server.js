@@ -16,6 +16,13 @@ async function boot() {
   initSentry(); // Phase 8 — no-op without SENTRY_DSN.
   const app = createApp();
 
+  // Bind the HTTP server FIRST so the healthcheck can pass within Railway's
+  // 30s window. Infra checks (DB, mailer) run after — a stalled verifyMailer()
+  // against an unreachable SMTP host must not delay the server from listening.
+  const server = app.listen(config.PORT, () => {
+    logger.info(`Flotilla API listening on http://localhost:${config.PORT} [${config.NODE_ENV}]`);
+  });
+
   // Verify infra connectivity (non-fatal warnings; tests boot without it).
   if (!config.isTest) {
     try {
@@ -27,10 +34,6 @@ async function boot() {
     const mailOk = await verifyMailer();
     logger.info({ mailer: mailOk ? 'ok' : 'unreachable' }, 'mailer status');
   }
-
-  const server = app.listen(config.PORT, () => {
-    logger.info(`Flotilla API listening on http://localhost:${config.PORT} [${config.NODE_ENV}]`);
-  });
 
   // Realtime (/client namespace). /daemon namespace added in Phase 4.
   if (!config.isTest) {
