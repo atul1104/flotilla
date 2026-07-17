@@ -51,7 +51,7 @@ client you may not do this yourself, but you should know it exists:
 | A database (PostgreSQL) | Stores workspaces, messages, tasks, accounts. |
 | File storage (S3-compatible, e.g. Cloudflare R2) | Stores uploaded files. |
 | An email service (SMTP) | Sends invite, verification, and password-reset emails. |
-| The Flotilla daemon (installed from a GitHub Release tarball) | So users can run `flotilla-daemon …` to pair their computers. |
+| The Flotilla daemon (installed from the git repo via SSH) | So users can run `flotilla-daemon …` to pair their computers. |
 
 If email is not configured, the app still works, but invite/verification/reset
 emails will not be delivered. Ask your administrator if you're unsure.
@@ -193,7 +193,7 @@ not on Flotilla's servers. Benefits:
 1. Go to **Agents & Computers** → click **Generate pairing code**.
 2. You'll see a one-time install line and a command like:
    ```
-   npm install -g https://github.com/atul1104/flotilla/releases/download/daemon-v<ver>/atul1104-flotilla-<ver>.tgz
+   npm install -g git+ssh://git@github.com:atul1104/flotilla.git#daemon-v<ver>:packages/daemon
    flotilla-daemon pair  https://your-flotilla-server  <CODE>
    ```
 3. **On the computer you want to connect** (with Node.js installed), open a

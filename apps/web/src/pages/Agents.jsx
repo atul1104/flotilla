@@ -33,11 +33,12 @@ const POLICY_LABELS = {
   [APPROVAL_POLICY_KEYS.ALL_TOOLS]: 'All tool use',
 };
 
-// One-line install for the daemon CLI, shipped as a tarball on GitHub Releases
-// (npm-independent — no registry needed, just Node). Keep in sync with the
-// daemon-v<version> release in .github/workflows/publish-daemon.yml.
+// One-line install for the daemon CLI from the private git repo (npm-independent
+// — no registry, just Node + SSH access to the repo). Installs only the daemon
+// workspace subdirectory, so `flotilla-daemon` lands on PATH without pulling the
+// whole monorepo. Keep the tag in sync with packages/daemon/package.json version.
 const DAEMON_INSTALL_CMD =
-  'npm install -g https://github.com/atul1104/flotilla/releases/download/daemon-v0.1.0/atul1104-flotilla-0.1.0.tgz';
+  'npm install -g git+ssh://git@github.com:atul1104/flotilla.git#daemon-v0.1.0:packages/daemon';
 
 const RUN_STATUS_TONE = {
   succeeded: 'text-[var(--color-success)]',
@@ -116,7 +117,7 @@ export function Agents() {
             {pairCode && (
               <div className="mt-3 w-full space-y-1">
                 <div className="font-mono text-[10px] text-[var(--color-fg-muted)]">
-                  One-time install (needs Node):
+                  One-time install (needs Node + repo SSH access):
                 </div>
                 <div className="flex items-center gap-2 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-1">
                   <code className="min-w-0 flex-1 truncate font-mono text-[11px]">

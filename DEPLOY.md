@@ -40,7 +40,7 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
 | File storage | Cloudflare R2 free | $0 | 10 GB + free egress. |
 | Email | Resend free | $0 | 3,000/mo, 100/day. SMTP interface. |
 | Landing site | Netlify free | $0 | `apps/landing` only (optional, separate origin). |
-| Daemon | GitHub Releases | $0 | Tag `daemon-v<ver>` → workflow packs tarball + attaches to release; users `npm install -g <release-url>`. |
+| Daemon | git repo (SSH) | $0 | `npm install -g git+ssh://git@github.com:atul1104/flotilla.git#daemon-v<ver>:packages/daemon` (private repo — user needs SSH access). |
 | Custom domain | any registrar | ~$10–15/yr | Optional but recommended for a clean URL. |
 
 ---
@@ -144,16 +144,16 @@ so the dashboard doesn't override the toml.
 
 1. **Point a custom domain** at the Railway service (optional) and update
    `APP_ORIGIN` / `API_ORIGIN` to match.
-2. **Release the daemon** so beta users can pair their computers (npm-independent — ships a tarball on GitHub Releases):
+2. **Release the daemon** so beta users can pair their computers. Tag a version (the install command pins to it):
    ```bash
    npm version patch --workspace @atul1104/flotilla
    git add -A && git commit -m "daemon: bump version"
    git tag daemon-v$(node -p "require('./packages/daemon/package.json').version")
    git push origin main daemon-v*
    ```
-   The `publish-daemon` workflow packs `atul1104-flotilla-<ver>.tgz` and attaches it to a release. Users install with:
+   Users install from the git repo (private — they need SSH access to `atul1104/flotilla`):
    ```bash
-   npm install -g https://github.com/atul1104/flotilla/releases/download/daemon-v<ver>/atul1104-flotilla-<ver>.tgz
+   npm install -g git+ssh://git@github.com:atul1104/flotilla.git#daemon-v<ver>:packages/daemon
    ```
    Then a user runs:
    ```bash

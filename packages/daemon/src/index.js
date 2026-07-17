@@ -94,7 +94,7 @@ function installService() {
   }
   const home = homedir();
   const plat = platform();
-  const cmd = `npx @atul1104/flotilla start --server ${cfg.serverUrl}`;
+  const cmd = `flotilla-daemon start --server ${cfg.serverUrl}`;
 
   if (plat === 'darwin') {
     const dir = join(home, 'Library', 'LaunchAgents');
