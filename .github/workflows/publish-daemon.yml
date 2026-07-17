@@ -1,0 +1,59 @@
+name: Release daemon
+
+# Builds the @atul1104/flotilla daemon CLI into a tarball and attaches it to a
+# GitHub Release. npm-independent: users install directly from the release URL,
+# no npm registry / publish token / org needed. Requires the repo to be PUBLIC
+# so unauthenticated `npm install -g <release-url>` can fetch the asset.
+#
+# Triggered by a tag named `daemon-v<version>` (e.g. `daemon-v0.1.0`), so the
+# daemon can be versioned and shipped independently of the web/api app.
+#
+# Resulting one-line install for users (Node required):
+#   npm install -g https://github.com/atul1104/flotilla/releases/download/daemon-v0.1.0/atul1104-flotilla-0.1.0.tgz
+
+on:
+  push:
+    tags:
+      - 'daemon-v*'
+
+permissions:
+  contents: write # needed to create the release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # Sanity: the tag version must match the package version.
+      - name: Verify tag matches package version
+        id: ver
+        run: |
+          TAG="${GITHUB_REF_NAME#daemon-v}"
+          PKG=$(node -p "require('./packages/daemon/package.json').version")
+          echo "tag=$TAG package=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "Tag version ($TAG) does not match package.json ($PKG)" >&2
+            exit 1
+          fi
+          echo "version=$PKG" >> "$GITHUB_OUTPUT"
+
+      # npm pack produces atul1104-flotilla-<version>.tgz (scope -> @/-).
+      - name: Pack tarball
+        run: |
+          npm pack --workspace @atul1104/flotilla
+          ls -1 atul1104-flotilla-*.tgz
+
+      - name: Create release + attach tarball
+        uses: softprops/action-gh-release@v2
+        with:
+          name: daemon ${{ steps.ver.outputs.version }}
+          generate_release_notes: true
+          files: atul1104-flotilla-*.tgz
