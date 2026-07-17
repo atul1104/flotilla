@@ -47,9 +47,11 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
 
 ## 3. Prerequisites (do these first)
 
-1. **Neon** — create a project. Copy the **pooled** connection string (`…-pooler.neon.tech…?sslmode=require`). Run migrations once:
+1. **Neon** — create a project. Copy both connection strings: the **pooled** one (`…-pooler.neon.tech…?sslmode=require`) for `DATABASE_URL` and the **non-pooled** one (same without `-pooler`) for `DIRECT_DATABASE_URL`. Run migrations once:
    ```bash
-   DATABASE_URL='postgresql://…?sslmode=require' npm run db:migrate:deploy
+   DATABASE_URL='postgresql://…-pooler…?sslmode=require' \
+   DIRECT_DATABASE_URL='postgresql://…?sslmode=require' \
+   npm run db:migrate:deploy
    ```
 2. **Cloudflare R2** — create a bucket + an API token (Object Read & Write). Grab the
    account-level S3 endpoint (`https://<accountid>.r2.cloudflarestorage.com`), the
@@ -77,7 +79,8 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
 | Var | Value |
 |---|---|
 | `NODE_ENV` | `production` |
-| `DATABASE_URL` | Neon pooled URL (`…?sslmode=require`) |
+| `DATABASE_URL` | Neon **pooled** URL (`…-pooler…?sslmode=require`) — used by the app at runtime |
+| `DIRECT_DATABASE_URL` | Neon **non-pooled** URL (same without `-pooler`) — used by `prisma migrate deploy` (advisory locks need a real session, not PgBouncer) |
 | `SESSION_SECRET` | `openssl rand -hex 32` (≥32 chars) |
 | `APP_ORIGIN` | your deployed URL, e.g. `https://flotilla.up.railway.app` |
 | `API_ORIGIN` | same as `APP_ORIGIN` (Option A = single origin) |
