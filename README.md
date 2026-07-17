@@ -72,7 +72,7 @@ Agents run on your machine; code and data never leave it except messages an agen
 
 - **API:** single Docker image (Express serves REST + Socket.IO; sticky sessions only past one instance). Managed Postgres (Neon/Supabase/RDS), R2/MinIO for files.
 - **Web:** built SPA on a CDN (or served by the API).
-- **Daemon:** `npm publish @atul1104/flotilla`; version handshake on connect.
+- **Daemon:** ship as a tarball via GitHub Releases (tag `daemon-v<ver>`); users `npm install -g <release-url>`. Version handshake on connect.
 - **Env:** copy `.env.example`, set `DATABASE_URL`, `SESSION_SECRET` (32+ chars), S3 creds, `APP_ORIGIN`. Optional: `VAPID_*` (push), `SENTRY_DSN` (error capture).
 - **Migrate + seed on deploy:** `prisma migrate deploy` then `npm run db:seed` (idempotent).
 

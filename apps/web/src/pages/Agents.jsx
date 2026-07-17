@@ -33,6 +33,12 @@ const POLICY_LABELS = {
   [APPROVAL_POLICY_KEYS.ALL_TOOLS]: 'All tool use',
 };
 
+// One-line install for the daemon CLI, shipped as a tarball on GitHub Releases
+// (npm-independent — no registry needed, just Node). Keep in sync with the
+// daemon-v<version> release in .github/workflows/publish-daemon.yml.
+const DAEMON_INSTALL_CMD =
+  'npm install -g https://github.com/atul1104/flotilla/releases/download/daemon-v0.1.0/atul1104-flotilla-0.1.0.tgz';
+
 const RUN_STATUS_TONE = {
   succeeded: 'text-[var(--color-success)]',
   failed: 'text-[var(--color-danger)]',
@@ -50,6 +56,7 @@ export function Agents() {
   const [pairCode, setPairCode] = useState(null);
   const [pairServerUrl, setPairServerUrl] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [installCopied, setInstallCopied] = useState(false);
 
   const pairMutation = useMutation({
     mutationFn: () => api.post(`/workspaces/${workspace.id}/computers/pairing-code`),
@@ -65,6 +72,12 @@ export function Agents() {
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const copyInstall = () => {
+    navigator.clipboard.writeText(DAEMON_INSTALL_CMD);
+    setInstallCopied(true);
+    setTimeout(() => setInstallCopied(false), 1500);
   };
 
   // Phase 6 — agent team templates (improvement #5).
@@ -105,9 +118,18 @@ export function Agents() {
                 <div className="font-mono text-[10px] text-[var(--color-fg-muted)]">
                   One-time install (needs Node):
                 </div>
-                <code className="block truncate font-mono text-[11px] text-[var(--color-fg-muted)]">
-                  npm install -g @atul1104/flotilla
-                </code>
+                <div className="flex items-center gap-2 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-1">
+                  <code className="min-w-0 flex-1 truncate font-mono text-[11px]">
+                    {DAEMON_INSTALL_CMD}
+                  </code>
+                  <Button variant="ghost" size="sm" onClick={copyInstall}>
+                    {installCopied ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
                 <div className="font-mono text-[10px] text-[var(--color-fg-muted)]">
                   Then run on the machine to pair:
                 </div>
