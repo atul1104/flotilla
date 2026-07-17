@@ -110,6 +110,12 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
 
 ## 5. Railway service configuration
 
+These commands are version-controlled in [`railway.toml`](./railway.toml) at the
+repo root, so they track the repo (e.g. a package-scope rename updates them via git
+instead of silently breaking deploys). Railway v2 reads that file on deploy. If you
+previously set Build/Start/Release commands in the dashboard, **clear those fields**
+so the dashboard doesn't override the toml.
+
 | Setting | Value |
 |---|---|
 | **Root directory** | repo root |
