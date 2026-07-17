@@ -40,5 +40,5 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - name: Prisma migrate (test DB)
-        run: npm run db:migrate --workspace @flotilla/api
+        run: npm run db:migrate --workspace @atul1104/api
       - run: npm test
