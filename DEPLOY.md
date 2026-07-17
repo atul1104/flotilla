@@ -40,7 +40,7 @@ scaling past one instance. One origin = no cross-origin cookie/CORS work.
 | File storage | Cloudflare R2 free | $0 | 10 GB + free egress. |
 | Email | Resend free | $0 | 3,000/mo, 100/day. SMTP interface. |
 | Landing site | Netlify free | $0 | `apps/landing` only (optional, separate origin). |
-| Daemon | npm | $0 | `npm publish @atul1104/daemon` so `npx` works. |
+| Daemon | npm | $0 | `npm publish @atul1104/flotilla` so `npx` works. |
 | Custom domain | any registrar | ~$10–15/yr | Optional but recommended for a clean URL. |
 
 ---
@@ -143,7 +143,7 @@ so the dashboard doesn't override the toml.
    `APP_ORIGIN` / `API_ORIGIN` to match.
 2. **Publish the daemon** so beta users can pair their computers:
    ```bash
-   npm version patch && npm publish --workspace @atul1104/daemon
+   npm version patch && npm publish --workspace @atul1104/flotilla
    ```
    Then a user runs:
    ```bash

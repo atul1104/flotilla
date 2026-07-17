@@ -61,7 +61,7 @@ export function Agents() {
 
   const copyCmd = (code) => {
     navigator.clipboard.writeText(
-      `npx @atul1104/daemon pair ${pairServerUrl ?? 'http://localhost:4000'} ${code}`,
+      `flotilla-daemon pair ${pairServerUrl ?? 'http://localhost:4000'} ${code}`,
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
@@ -101,14 +101,25 @@ export function Agents() {
               Generate pairing code
             </Button>
             {pairCode && (
-              <div className="flex flex-1 items-center gap-2 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-1">
-                <code className="min-w-0 flex-1 truncate font-mono text-[11px]">
-                  npx @atul1104/daemon pair {pairServerUrl ?? 'http://localhost:4000'}{' '}
-                  {pairCode.slice(0, 18)}…
+              <div className="mt-3 w-full space-y-1">
+                <div className="font-mono text-[10px] text-[var(--color-fg-muted)]">
+                  One-time install (needs Node):
+                </div>
+                <code className="block truncate font-mono text-[11px] text-[var(--color-fg-muted)]">
+                  npm install -g @atul1104/flotilla
                 </code>
-                <Button variant="ghost" size="sm" onClick={() => copyCmd(pairCode)}>
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                </Button>
+                <div className="font-mono text-[10px] text-[var(--color-fg-muted)]">
+                  Then run on the machine to pair:
+                </div>
+                <div className="flex items-center gap-2 border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-2 py-1">
+                  <code className="min-w-0 flex-1 truncate font-mono text-[11px]">
+                    flotilla-daemon pair {pairServerUrl ?? 'http://localhost:4000'}{' '}
+                    {pairCode.slice(0, 18)}…
+                  </code>
+                  <Button variant="ghost" size="sm" onClick={() => copyCmd(pairCode)}>
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
               </div>
             )}
           </div>
