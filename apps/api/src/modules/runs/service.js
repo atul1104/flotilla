@@ -295,11 +295,19 @@ export async function postAgentMessage(runId, content, payload) {
     channelId = general?.id;
   }
   if (!channelId) return;
+  // Where does the reply land?
+  //  - If the trigger is itself a thread reply (threadRootId set), reply in that
+  //    thread — keeps a threaded conversation threaded.
+  //  - If the trigger is an agent→agent handoff (parentRunId set), thread under
+  //    the trigger so the handoff is traceable but doesn't spam the channel.
+  //  - If a human @mentioned an agent in a top-level message, reply INLINE in the
+  //    channel (not a thread) so the answer is visible without clicking in.
+  const threadRootId = trigger?.threadRootId ?? (run.parentRunId ? trigger?.id : null) ?? null;
   const { message, mentionedActorIds } = await createMessage({
     channelId,
     senderId: run.agent.actor.id,
     content,
-    threadRootId: trigger?.threadRootId ?? trigger?.id ?? null,
+    threadRootId,
     payload: { ...(payload ?? {}), runId },
   });
   (await rt())?.broadcastMessage(run.workspaceId, channelId, message, mentionedActorIds);
