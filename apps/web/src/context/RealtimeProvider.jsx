@@ -14,7 +14,20 @@ export function RealtimeProvider({ children }) {
   useEffect(() => {
     const socket = connectSocket();
 
+    // Insert a message into the right cache: top-level messages go in the
+    // channel's ['messages', channelId] (infinite) cache; threaded replies go
+    // in ['thread', threadRootId]. Routing both into the channel cache caused
+    // threaded agent replies to flash in then vanish on the next refetch (which
+    // only returns top-level messages).
     const upsertMessage = (channelId, message) => {
+      if (message.threadRootId) {
+        qc.setQueriesData({ queryKey: ['thread', message.threadRootId] }, (old) => {
+          if (!old) return old;
+          if (old.items?.some((m) => m.id === message.id)) return old;
+          return { ...old, items: [...(old.items ?? []), message] };
+        });
+        return;
+      }
       qc.setQueriesData({ queryKey: ['messages', channelId] }, (old) => {
         if (!old) return old;
         // Dedupe by id across all pages.
@@ -29,6 +42,8 @@ export function RealtimeProvider({ children }) {
     };
 
     const patchMessage = (channelId, messageId, fn) => {
+      // Patch in both caches — a message lives in exactly one, so the no-op
+      // branch in the other is harmless.
       qc.setQueriesData({ queryKey: ['messages', channelId] }, (old) => {
         if (!old) return old;
         return {
@@ -38,6 +53,11 @@ export function RealtimeProvider({ children }) {
             items: p.items.map((m) => (m.id === messageId ? fn(m) : m)),
           })),
         };
+      });
+      qc.setQueriesData({ queryKey: ['thread'] }, (old) => {
+        if (!old || !old.items) return old;
+        if (!old.items.some((m) => m.id === messageId)) return old;
+        return { ...old, items: old.items.map((m) => (m.id === messageId ? fn(m) : m)) };
       });
     };
 
