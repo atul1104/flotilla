@@ -30,13 +30,13 @@ export function AppLayout() {
     <div className="flex h-full">
       <Sidebar workspace={ws.data} />
       <RealtimeProvider>
-        <main className="flex min-w-0 flex-1 flex-col">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {/* Top bar: search + notifications (Phase 6). */}
-          <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-2">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-2">
             <SearchBar workspace={ws.data} />
             <NotificationBell workspaceSlug={ws.data.slug} />
           </div>
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <Outlet context={{ workspace: ws.data }} />
           </div>
         </main>
