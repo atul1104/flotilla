@@ -49,6 +49,9 @@ export function Composer({ workspaceId, channelId, onSend, threadRootId }) {
   const matches = mention
     ? (members.data?.items ?? [])
         .filter((m) => m.userId !== user?.id)
+        // Skip members with no resolvable name/handle (e.g. orphaned agent
+        // actors left over from a delete) — they'd render as blank rows.
+        .filter((m) => (m.kind === 'agent' ? !!m.handle : !!m.name))
         .filter((m) => {
           // Agents resolve by @handle; humans by name. Match either field.
           const n = norm(m.name);

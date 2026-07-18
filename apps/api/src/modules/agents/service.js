@@ -108,6 +108,18 @@ async function assertComputerInWorkspace(computerId, workspaceId) {
 }
 
 export async function deleteAgent(workspaceId, agentId) {
-  await getAgent(workspaceId, agentId);
-  await prisma.agent.delete({ where: { id: agentId } });
+  const agent = await getAgent(workspaceId, agentId);
+  const actorId = agent.actorId;
+  await prisma.$transaction(async (tx) => {
+    // Delete the agent first (AgentRun etc. cascade on agentId).
+    await tx.agent.delete({ where: { id: agentId } });
+    // The Actor + workspace membership aren't cascade-removed by the Agent
+    // delete (Actor.agentId has no onDelete), so clean them up explicitly —
+    // otherwise orphaned members show up as blank rows in @mention suggestions
+    // and the members list.
+    if (actorId) {
+      await tx.workspaceMember.deleteMany({ where: { actorId } }).catch(() => {});
+      await tx.actor.deleteMany({ where: { id: actorId } }).catch(() => {});
+    }
+  });
 }
