@@ -101,9 +101,12 @@ export async function revokeComputer(workspaceId, computerId) {
   const computer = await prisma.computer.findUnique({ where: { id: computerId } });
   if (!computer || computer.workspaceId !== workspaceId)
     throw new NotFoundError('Computer not found');
-  await prisma.deviceToken.updateMany({
-    where: { computerId, revokedAt: null },
-    data: { revokedAt: new Date() },
-  });
-  return markOffline(computerId);
+  // Mark offline first so any connected daemon is kicked + the computer stops
+  // showing as online before the row goes away. DeviceTokens cascade on delete,
+  // so no separate revoke is needed — but stamp revokedAt for audit clarity in
+  // case a token is read between markOffline and the delete.
+  await markOffline(computerId);
+  // Agents bound to this computer are unassigned (computerId → null, via the
+  // SetNull FK); AgentRun.computerId is also SetNull so run history is kept.
+  await prisma.computer.delete({ where: { id: computerId } });
 }
