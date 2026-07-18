@@ -36,11 +36,13 @@ export function Composer({ workspaceId, channelId, onSend, threadRootId }) {
     const val = e.target.value;
     setText(val);
     emitTyping();
-    // Detect @mention at caret.
+    // Detect @mention at caret. `start` is the index of the `@` itself so that
+    // pickMention can replace the whole `@query` (including the @) with the
+    // resolved `@handle ` token — otherwise the typed @ survives and you get @@.
     const caret = e.target.selectionStart;
     const before = val.slice(0, caret);
     const match = before.match(/(?:^|\s)@([a-z0-9_.-]*)$/i);
-    if (match) setMention({ start: caret - match[1].length, query: match[1] });
+    if (match) setMention({ start: caret - match[1].length - 1, query: match[1] });
     else setMention(null);
   };
 
