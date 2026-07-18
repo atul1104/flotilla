@@ -25,11 +25,14 @@ function decodeCursor(cursor) {
 function serializeSender(actor) {
   if (!actor) return { id: null, kind: null, name: null, avatarUrl: null };
   const u = actor.user;
+  const a = actor.agent; // present for agent actors (kind=agent)
   return {
     id: actor.id,
     kind: actor.kind,
-    name: u?.name ?? actor.handle ?? 'agent',
-    avatarUrl: u?.avatarUrl ?? null,
+    // Humans have a name via user; agents have a name + @handle on the Agent row.
+    name: u?.name ?? a?.name ?? a?.handle ?? 'agent',
+    handle: a?.handle ?? null,
+    avatarUrl: u?.avatarUrl ?? a?.avatarUrl ?? null,
   };
 }
 
@@ -66,7 +69,7 @@ export async function listMessages(channelId, { cursor, limit, plan } = {}) {
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     take,
     include: {
-      sender: { include: { user: true } },
+      sender: { include: { user: true, agent: true } },
       reactions: true,
     },
   });
@@ -99,7 +102,7 @@ export async function listThread(rootId) {
   const rows = await prisma.message.findMany({
     where: { threadRootId: rootId, deletedAt: null },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-    include: { sender: { include: { user: true } }, reactions: true },
+    include: { sender: { include: { user: true, agent: true } }, reactions: true },
   });
   return rows.map(serializeMessage);
 }
@@ -163,7 +166,7 @@ export async function createMessage({
         ? { connect: attachmentIds.map((id) => ({ id })) }
         : undefined,
     },
-    include: { sender: { include: { user: true } }, reactions: true, attachments: true },
+    include: { sender: { include: { user: true, agent: true } }, reactions: true, attachments: true },
   });
 
   const mentionedActorIds = await resolveMentions(message.channelId, content);
@@ -187,7 +190,7 @@ export async function updateMessage(messageId, actorId, content) {
   const updated = await prisma.message.update({
     where: { id: messageId },
     data: { content, editedAt: new Date() },
-    include: { sender: { include: { user: true } }, reactions: true },
+    include: { sender: { include: { user: true, agent: true } }, reactions: true },
   });
   return serializeMessage(updated);
 }
