@@ -7,6 +7,7 @@ import { ConflictError, NotFoundError, ValidationError } from '@atul1104/shared'
 import { WORKSPACE_ROLE, ACTOR_KIND, DEFAULTS, DEFAULT_APPROVAL_POLICY } from '@atul1104/shared';
 import { assertAgentCap } from '../../lib/limits.js';
 import { markOnboardingStep } from '../workspaces/onboarding.js';
+import { onboardNewAgent } from './onboarding.js';
 
 export function serializeAgent(a) {
   return {
@@ -66,6 +67,9 @@ export async function createAgent(workspaceId, createdBy, fields, { plan } = {})
   });
   // Phase 8 — onboarding funnel (after the tx commits).
   await markOnboardingStep(workspaceId, 'first_agent').catch(() => {});
+  // Agent onboarding: @onboarder greets the new agent in #onboarding and
+  // triggers its first run. Best-effort, never fails agent creation.
+  await onboardNewAgent(workspaceId, result.id).catch(() => {});
   return result;
 }
 
