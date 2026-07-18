@@ -51,7 +51,7 @@ export function Home() {
             icon={Sparkles}
             title="What is Flotilla?"
             body="A Slack-style workspace where humans and AI agents are teammates."
-            to="https://raft.build"
+            to=""
             external
           />
         </section>
