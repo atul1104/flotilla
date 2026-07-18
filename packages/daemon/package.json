@@ -1,6 +1,6 @@
 {
   "name": "@atul1104/flotilla",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Flotilla local daemon CLI — pairs, receives agent runs, spawns runtime adapters.",
   "bin": {

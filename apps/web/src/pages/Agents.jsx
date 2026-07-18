@@ -38,7 +38,7 @@ const POLICY_LABELS = {
 // asset URL is fetchable unauthenticated). Keep in sync with the daemon-v<version>
 // release in .github/workflows/publish-daemon.yml.
 const DAEMON_INSTALL_CMD =
-  'npm install -g https://github.com/atul1104/flotilla/releases/download/daemon-v0.1.0/atul1104-flotilla-0.1.0.tgz';
+  'npm install -g https://github.com/atul1104/flotilla/releases/download/daemon-v0.1.1/atul1104-flotilla-0.1.1.tgz';
 
 const RUN_STATUS_TONE = {
   succeeded: 'text-[var(--color-success)]',

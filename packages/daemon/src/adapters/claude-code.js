@@ -165,6 +165,20 @@ export function startClaudeCodeRun({
   proc.stdin.end();
 
   let buf = '';
+  // claude's stream-json emits BOTH an `assistant` event (streamed text) and a
+  // terminal `result` event whose .result is the same text. Without a guard we'd
+  // call onMessage twice → two RUN_MESSAGEs → two identical channel messages.
+  // Track whether we've already sent a message this run; `result` only sends if
+  // no assistant text block was emitted (e.g. tool-only runs).
+  let sentMessage = false;
+  const onMessage = (content, payload) => {
+    sentMessage = true;
+    postMessage(content, payload);
+  };
+  const onResultMessage = (content, payload) => {
+    if (sentMessage) return;
+    onMessage(content, payload);
+  };
   proc.stdout.on('data', (chunk) => {
     buf += chunk.toString();
     const lines = buf.split('\n');
@@ -177,7 +191,7 @@ export function startClaudeCodeRun({
       } catch {
         continue;
       }
-      mapEvent(evt, { emit, onMessage: postMessage });
+      mapEvent(evt, { emit, onMessage, onResultMessage });
     }
   });
 
@@ -219,7 +233,7 @@ export function startClaudeCodeRun({
   };
 }
 
-function mapEvent(evt, { emit, onMessage }) {
+function mapEvent(evt, { emit, onMessage, onResultMessage }) {
   const t = evt?.type;
   if (t === 'assistant' && evt.message?.content) {
     for (const block of evt.message.content) {
@@ -236,6 +250,6 @@ function mapEvent(evt, { emit, onMessage }) {
     if (evt.usage) {
       // best-effort usage capture when the runtime reports it
     }
-    if (evt.result) onMessage(String(evt.result));
+    if (evt.result) onResultMessage(String(evt.result));
   }
 }
