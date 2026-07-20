@@ -18,6 +18,7 @@ const stamp = () => Date.now().toString(36);
 
 let workspaceId = null;
 let generalId = null;
+let computerId = null;
 
 beforeAll(async () => {
   const email = `p8-${stamp()}@t.co`;
@@ -31,6 +32,11 @@ beforeAll(async () => {
   workspaceId = signup.body.workspace.id;
   const ch = await A.get(`/api/v1/workspaces/${workspaceId}/channels`);
   generalId = ch.body.items.find((c) => c.name === 'general').id;
+  // A computer is required to create an agent (computerId is mandatory).
+  const computer = await prisma.computer.create({
+    data: { workspaceId, ownerUserId: signup.body.user.id, name: 'p8-box' },
+  });
+  computerId = computer.id;
 });
 
 // ---------------------------------------------------------------------------
@@ -71,6 +77,7 @@ describe('Phase 8: plan limits', () => {
         name: `Bot ${i}`,
         handle: `bot${i}-${stamp()}`,
         runtime: 'claude-code',
+        computerId,
       });
       expect(r.status).toBe(201);
     }
@@ -79,6 +86,7 @@ describe('Phase 8: plan limits', () => {
       name: 'Bot 4',
       handle: `bot4-${stamp()}`,
       runtime: 'claude-code',
+      computerId,
     });
     expect(r.status).toBe(402);
     expect(r.body.code).toBe('PLAN_LIMIT');
@@ -136,6 +144,7 @@ describe('Phase 8: CSRF content-type check', () => {
       name: 'JSON bot',
       handle: `jsonbot-${stamp()}`,
       runtime: 'claude-code',
+      computerId,
     });
     expect(res.status).toBe(201);
   });

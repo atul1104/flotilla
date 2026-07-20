@@ -59,7 +59,7 @@ export const usageQuerySchema = z.object({
 // ---------------------------------------------------------------------------
 export const agentTeamSchema = z.object({
   template: z.enum(Object.keys(AGENT_TEAM_TEMPLATES)),
-  computerId: uuidSchema.optional(), // bind all created agents to one computer
+  computerId: uuidSchema, // bind all created agents to one computer
 });
 
 // ---------------------------------------------------------------------------

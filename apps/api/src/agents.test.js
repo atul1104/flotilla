@@ -83,15 +83,11 @@ describe('agent run end-to-end (paired daemon)', () => {
         handle: 'researcher',
         runtime: 'claude-code',
         tagline: 'summarizes things',
+        computerId,
       }),
     });
     expect(agentRes.status).toBe(201);
     const agent = agentRes.body;
-    await fetchJson(`/api/v1/agents/${agent.id}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json', cookie },
-      body: JSON.stringify({ computerId }),
-    });
 
     // 4) fake daemon connects with the device token
     const daemon = io(`${BASE()}/daemon`, {

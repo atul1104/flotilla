@@ -194,7 +194,7 @@ export function Agents() {
                 onChange={(e) => setTeamComputerId(e.target.value || null)}
                 className="border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-xs"
               >
-                <option value="">none</option>
+                <option value="">Select a computer…</option>
                 {onlineComputers.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -218,6 +218,7 @@ export function Agents() {
                   variant="secondary"
                   size="sm"
                   loading={createTeam.isPending}
+                  disabled={!teamComputerId}
                   onClick={() =>
                     createTeam.mutate({ template: t.id, computerId: teamComputerId ?? undefined })
                   }
@@ -361,8 +362,9 @@ function CreateAgentDialog({ computers, onClose, onCreate, error }) {
                 className="w-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-2 text-sm"
                 value={form.computerId}
                 onChange={(e) => setForm({ ...form, computerId: e.target.value })}
+                required
               >
-                <option value="">(none)</option>
+                <option value="">Select a computer…</option>
                 {computers.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} {c.status === 'online' ? '●' : '○'}

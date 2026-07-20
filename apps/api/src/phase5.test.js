@@ -71,12 +71,8 @@ async function setup(cookie, wsId, handles) {
   for (const handle of handles) {
     const a = await fetchJson(
       `/api/v1/workspaces/${wsId}/agents`,
-      json({ name: handle, handle, runtime: 'claude-code' }, cookie),
+      json({ name: handle, handle, runtime: 'claude-code', computerId }, cookie),
     );
-    await fetchJson(`/api/v1/agents/${a.body.id}`, {
-      ...patch(cookie),
-      body: JSON.stringify({ computerId }),
-    });
     agents[handle] = a.body;
   }
   return { general, computerId, deviceToken, agents };

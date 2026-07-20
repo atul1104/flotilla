@@ -76,7 +76,7 @@ export const createAgentSchema = z.object({
   systemPrompt: z.string().trim().max(20_000).optional(),
   runtime: runtimeSchema.default('claude-code'),
   model: z.string().trim().max(80).optional(),
-  computerId: uuidSchema.optional(),
+  computerId: uuidSchema,
   approvalPolicy: approvalPolicySchema.optional(),
 });
 

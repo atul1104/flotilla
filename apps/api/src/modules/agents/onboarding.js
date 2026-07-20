@@ -30,7 +30,7 @@ const ONBOARDING_CHANNEL = 'onboarding';
 const DEFAULT_ONBOARDER_PROMPT = `You are the workspace onboarding agent. When a new agent is @mentioned to you in #onboarding, greet them, give them context about the workspace and their teammates, and ask them to introduce themselves and read their AGENT.md. Keep it warm and concise.`;
 
 /** Ensure @onboarder exists in the workspace; return its agent row. */
-async function ensureOnboarder(workspaceId, createdBy) {
+async function ensureOnboarder(workspaceId, createdBy, computerId) {
   const existing = await prisma.agent.findUnique({
     where: { workspaceId_handle: { workspaceId, handle: ONBOARDER_HANDLE } },
     include: { actor: true },
@@ -46,6 +46,7 @@ async function ensureOnboarder(workspaceId, createdBy) {
       systemPrompt: DEFAULT_ONBOARDER_PROMPT,
       runtime: DEFAULTS.AGENT_RUNTIME,
       model: DEFAULTS.AGENT_MODEL,
+      computerId,
       approvalPolicy: { ...DEFAULT_APPROVAL_POLICY },
       createdBy,
     },
@@ -98,7 +99,7 @@ export async function onboardNewAgent(workspaceId, newAgentId) {
   // Don't onboard the onboarder itself (self-trigger guard + avoids a loop).
   if (newAgent.handle === ONBOARDER_HANDLE) return;
 
-  const onboarder = await ensureOnboarder(workspaceId, newAgent.createdBy);
+  const onboarder = await ensureOnboarder(workspaceId, newAgent.createdBy, newAgent.computerId);
   const channelId = await ensureOnboardingChannel(workspaceId, onboarder.actorId);
 
   // Post the greeting as @onboarder, @mentioning the new agent so the mention
