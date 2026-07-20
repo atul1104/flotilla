@@ -64,6 +64,45 @@ export function RealtimeProvider({ children }) {
     const removeMessage = (channelId, messageId) =>
       patchMessage(channelId, messageId, (m) => ({ ...m, deletedAt: new Date().toISOString() }));
 
+    // Inline "agent is typing…" indicator: resolve the run's agent handle (from
+    // the agents cache) + the channel it was triggered in (from the messages
+    // cache, via triggerMessageId), then dispatch a DOM event to the channel
+    // view. Only fires for mention-triggered runs in a channel the client has
+    // loaded — runs with no triggerMessageId (tasks, tests) stay silent.
+    const emitAgentTyping = (run, running) => {
+      if (!run?.agentId) return;
+      // Resolve agentId → handle from any ['agents', wsId] cache.
+      let agentHandle = null;
+      for (const data of qc.getQueriesData({ queryKey: ['agents'] })) {
+        const a = data?.items?.find((x) => x.id === run.agentId);
+        if (a?.handle) {
+          agentHandle = a.handle;
+          break;
+        }
+      }
+      if (!agentHandle) return;
+      // Resolve triggerMessageId → channelId from any ['messages', chId] cache.
+      let channelId = null;
+      if (run.triggerMessageId) {
+        for (const data of qc.getQueriesData({ queryKey: ['messages'] })) {
+          if (!data?.pages) continue;
+          for (const p of data.pages) {
+            const m = p.items?.find((x) => x.id === run.triggerMessageId);
+            if (m) {
+              channelId = m.channelId;
+              break;
+            }
+          }
+          if (channelId) break;
+        }
+      }
+      window.dispatchEvent(
+        new CustomEvent('flotilla:agentTyping', {
+          detail: { channelId, handle: agentHandle, running },
+        }),
+      );
+    };
+
     const onCreated = ({ channelId, message }) => {
       upsertMessage(channelId, message);
       // Bump unread for the channel if it's not the active view.
@@ -88,11 +127,15 @@ export function RealtimeProvider({ children }) {
     socket.on(E.TYPING, onTyping);
     socket.on(E.TASK_CREATED, () => qc.invalidateQueries({ queryKey: ['tasks'] }));
     socket.on(E.TASK_UPDATED, () => qc.invalidateQueries({ queryKey: ['tasks'] }));
-    socket.on(E.RUN_STARTED, () => qc.invalidateQueries({ queryKey: ['messages'] }));
+    socket.on(E.RUN_STARTED, (data) => {
+      qc.invalidateQueries({ queryKey: ['messages'] });
+      emitAgentTyping(data?.run, true);
+    });
     socket.on(E.RUN_EVENT, () => qc.invalidateQueries({ queryKey: ['runEvents'] }));
-    socket.on(E.RUN_FINISHED, () => {
+    socket.on(E.RUN_FINISHED, (data) => {
       qc.invalidateQueries({ queryKey: ['messages'] });
       qc.invalidateQueries({ queryKey: ['runEvents'] });
+      emitAgentTyping(data?.run, false);
     });
     socket.on(E.AGENT_STATUS, () => qc.invalidateQueries({ queryKey: ['agents'] }));
     socket.on(E.COMPUTER_STATUS, () => qc.invalidateQueries({ queryKey: ['computers'] }));

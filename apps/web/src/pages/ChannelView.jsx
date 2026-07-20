@@ -16,6 +16,7 @@ export function ChannelView() {
   const react = useReact(channelId);
   const [threadRoot, setThreadRoot] = useState(null);
   const [typing, setTyping] = useState([]);
+  const [agentTyping, setAgentTyping] = useState([]);
   const readTimer = useRef(null);
 
   const channel = channels.data?.items?.find((c) => c.id === channelId);
@@ -44,6 +45,20 @@ export function ChannelView() {
     return () => window.removeEventListener('flotilla:typing', handler);
   }, [channelId]);
 
+  // Agent "is typing…" indicator — fires on RUN_STARTED/RUN_FINISHED for runs
+  // triggered in this channel. No auto-expiry; clears on RUN_FINISHED.
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail.channelId !== channelId) return;
+      setAgentTyping((a) => {
+        const rest = a.filter((h) => h !== e.detail.handle);
+        return e.detail.running ? [...rest, e.detail.handle] : rest;
+      });
+    };
+    window.addEventListener('flotilla:agentTyping', handler);
+    return () => window.removeEventListener('flotilla:agentTyping', handler);
+  }, [channelId]);
+
   const doReact = ({ messageId, emoji }, mine) =>
     mine ? react.remove.mutate({ messageId, emoji }) : react.add.mutate({ messageId, emoji });
 
@@ -68,9 +83,19 @@ export function ChannelView() {
           onLoadOlder={() => messages.fetchNextPage()}
         />
 
-        {typing.length > 0 && (
-          <div className="border-t border-[var(--color-border-soft)] px-4 py-1 font-mono text-[11px] text-[var(--color-fg-muted)]">
-            {typing.map((t) => t.name).join(', ')} {typing.length === 1 ? 'is' : 'are'} typing…
+        {(typing.length > 0 || agentTyping.length > 0) && (
+          <div className="space-y-0.5 border-t border-[var(--color-border-soft)] px-4 py-1 font-mono text-[11px] text-[var(--color-fg-muted)]">
+            {typing.length > 0 && (
+              <div>
+                {typing.map((t) => t.name).join(', ')} {typing.length === 1 ? 'is' : 'are'} typing…
+              </div>
+            )}
+            {agentTyping.length > 0 && (
+              <div>
+                {agentTyping.map((h) => `@${h}`).join(', ')}{' '}
+                {agentTyping.length === 1 ? 'is' : 'are'} working…
+              </div>
+            )}
           </div>
         )}
 
