@@ -64,11 +64,19 @@ export function MessageList({ messagesData, onOpenThread, onReact, isFetchingOld
     measureElement: (el) => el.getBoundingClientRect().height,
   });
 
-  // Auto-scroll to bottom when new messages arrive (if the user is at the bottom).
+  // Auto-scroll to bottom when the channel opens or new messages arrive (if the
+  // user is at the bottom). Deferred a frame + uses the virtualizer's scrollToIndex
+  // so it lands on the newest row even before dynamic row measurement completes —
+  // a synchronous scrollTop=scrollHeight lands short because the virtualizer hasn't
+  // measured yet, so opening a channel showed the oldest messages instead.
+  const newestId = rows[rows.length - 1]?.id;
   useEffect(() => {
-    const el = scrollRef.current;
-    if (el && atBottomRef.current) el.scrollTop = el.scrollHeight;
-  }, [items.length]);
+    if (!atBottomRef.current || rows.length === 0) return;
+    const raf = requestAnimationFrame(() => {
+      virtualizer.scrollToIndex(rows.length - 1, { align: 'end' });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [newestId, rows.length]);
 
   const onScroll = () => {
     const el = scrollRef.current;
