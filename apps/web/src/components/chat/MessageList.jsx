@@ -61,7 +61,13 @@ export function MessageList({ messagesData, onOpenThread, onReact, isFetchingOld
     getScrollElement: () => scrollRef.current,
     estimateSize: (i) => (rows[i]?.type === 'day' ? 32 : 80),
     overscan: 8,
-    measureElement: (el) => el.getBoundingClientRect().height,
+    // No custom measureElement: the library default reads borderBoxSize via
+    // ResizeObserver, which re-measures on resize. The previous override used
+    // getBoundingClientRect().height, which excludes margins — day dividers
+    // (my-2) were measured ~16px too short, so the next message overlapped
+    // them and drift accumulated across day boundaries (most visible in
+    // long channels like #general). Rows below use padding, not margin, so
+    // their full height is captured.
   });
 
   // Auto-scroll to bottom when the channel opens or new messages arrive (if the
@@ -115,7 +121,7 @@ export function MessageList({ messagesData, onOpenThread, onReact, isFetchingOld
               }}
             >
               {row.type === 'day' ? (
-                <div className="my-2 flex items-center gap-3 px-4">
+                <div className="flex items-center gap-3 px-4 py-2">
                   <div className="h-px flex-1 bg-[var(--color-border-soft)]" />
                   <span className="font-mono text-[10px] uppercase tracking-wide text-[var(--color-fg-muted)]">
                     {row.day}
