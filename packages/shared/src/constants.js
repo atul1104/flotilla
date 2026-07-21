@@ -397,3 +397,102 @@ export const AGENT_TEAM_TEMPLATES = {
     ],
   },
 };
+
+// ---------------------------------------------------------------------------
+// Phase 8+ — Git-based collaboration (GIT_COLLABORATION.md)
+// ---------------------------------------------------------------------------
+/** How tightly a human shadows an agent's work (Phase 2 transparency modes). */
+export const COLLABORATION_MODES = {
+  AUTONOMOUS: 'autonomous', // agent works alone
+  SUPERVISED: 'supervised', // human can observe + intervene
+  INTERACTIVE: 'interactive', // human + agent work together
+  MANUAL: 'manual', // human-led with agent assistance
+};
+
+export const COLLABORATION_MODE = COLLABORATION_MODES; // alias for ergonomics
+
+/** Git operations an agent can perform against a task's repo. */
+export const GIT_OPERATION = {
+  CLONE: 'clone',
+  PULL: 'pull',
+  PUSH: 'push',
+  COMMIT: 'commit',
+  BRANCH: 'branch',
+  PR: 'pr',
+  MERGE: 'merge',
+};
+
+export const GIT_OPERATION_STATUS = {
+  PENDING: 'pending',
+  SUCCESS: 'success',
+  FAILED: 'failed',
+};
+
+export const GIT_WORKFLOW = {
+  FEATURE_BRANCH: 'feature-branch',
+  TRUNK_BASED: 'trunk-based',
+};
+
+/**
+ * Sensitive Git operations that must NEVER execute without explicit human
+ * approval, regardless of collaboration mode (GIT_COLLABORATION.md §Security).
+ */
+export const SENSITIVE_GIT_OPS = ['push_to_main', 'delete_branch', 'force_push', 'modify_history'];
+
+/** Branch naming template: `feature/<handle>-<slug>` (§Best Practices). */
+export const GIT_BRANCH_TEMPLATE = {
+  BY_HANDLE: 'feature/{handle}-{slug}',
+  BY_TASK: 'feature/task-{taskId}-{slug}',
+};
+
+/**
+ * `/client` Git lifecycle events (Phase 3 bridge). Emitted alongside the
+ * generic `OPERATION_RECORDED` so the dashboard can switch on a typed event.
+ */
+export const GIT_SOCKET_EVENTS = {
+  OPERATION_RECORDED: 'git.operation.recorded',
+  BRANCH_CREATED: 'git.branch.created',
+  COMMIT_PUSHED: 'git.commit.pushed',
+  PULL_REQUEST_OPENED: 'git.pr.opened',
+  PULL_REQUEST_MERGED: 'git.pr.merged',
+  CONFLICT_DETECTED: 'git.conflict.detected',
+  STATUS_CHANGED: 'git.status.changed',
+};
+
+/** Map a recorded GitOperation → the typed socket event it represents. */
+export function gitEventForOperation(operation, status) {
+  if (status !== GIT_OPERATION_STATUS.SUCCESS) return GIT_SOCKET_EVENTS.STATUS_CHANGED;
+  switch (operation) {
+    case GIT_OPERATION.BRANCH:
+      return GIT_SOCKET_EVENTS.BRANCH_CREATED;
+    case GIT_OPERATION.PUSH:
+      return GIT_SOCKET_EVENTS.COMMIT_PUSHED;
+    case GIT_OPERATION.PR:
+      return GIT_SOCKET_EVENTS.PULL_REQUEST_OPENED;
+    case GIT_OPERATION.MERGE:
+      return GIT_SOCKET_EVENTS.PULL_REQUEST_MERGED;
+    default:
+      return GIT_SOCKET_EVENTS.OPERATION_RECORDED;
+  }
+}
+
+/** Git-event handoff triggers (Phase 4 smart-handoff protocol). */
+export const HANDOFF_TRIGGERS = {
+  PR_CREATED: 'pr_created',
+  PR_APPROVED: 'pr_approved',
+  BRANCH_UPDATED: 'branch_updated',
+  TESTS_PASSED: 'tests_passed',
+  REVIEW_COMPLETE: 'review_complete',
+};
+
+/** Emoji indicators agents use in chat status updates (§Communication). */
+export const GIT_STATUS_EMOJI = {
+  START: '🔄',
+  DONE: '✅',
+  FAIL: '❌',
+  LIST: '📋',
+  REVIEW: '👀',
+  PULL: '📥',
+  MERGE: '🔀',
+  SHIP: '🚀',
+};

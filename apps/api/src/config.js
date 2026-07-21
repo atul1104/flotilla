@@ -38,6 +38,11 @@ const schema = z.object({
 
   // Phase 8 — Sentry (optional; no-op when unset).
   SENTRY_DSN: z.string().optional(),
+
+  // Phase 8+ — Git collaboration: at-rest GitHub-token encryption key (any
+  // passphrase; the AES-256-GCM key is scrypt-derived from it). Falls back to
+  // SESSION_SECRET, then an insecure dev value. Required for prod.
+  GITHUB_TOKEN_ENCRYPTION_KEY: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

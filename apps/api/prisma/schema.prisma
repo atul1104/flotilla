@@ -340,7 +340,15 @@ model Task {
   updatedAt    DateTime   @updatedAt @map("updated_at")
   completedAt  DateTime?  @map("completed_at")
 
-  events TaskEvent[]
+  // Phase 8+ — Git context for the task's repo work (GIT_COLLABORATION.md).
+  githubRepo     String? @map("github_repo")
+  baseBranch     String? @map("base_branch")
+  featureBranch  String? @map("feature_branch")
+  pullRequestUrl String? @map("pull_request_url")
+  gitStatus      Json?   @map("git_status") @db.JsonB // {branch, commitsAhead, lastCommit, ...}
+
+  events        TaskEvent[]
+  gitOperations GitOperation[]
 
   @@index([workspaceId, status])
   @@index([assigneeId])
@@ -417,7 +425,16 @@ model Agent {
   createdBy       String      @map("created_by") @db.Uuid
   createdAt       DateTime    @default(now()) @map("created_at")
 
-  runs AgentRun[]
+  // Phase 8+ — Git-based collaboration (GIT_COLLABORATION.md). Encrypted GitHub
+  // token + default repo/branch/workflow so the agent can clone/push/open PRs.
+  githubTokenEncrypted String?  @map("github_token_encrypted")
+  defaultRepoUrl       String?  @map("default_repo_url")
+  defaultBranch        String?  @default("main") @map("default_branch")
+  gitWorkflow          String?  @map("git_workflow")
+  collaborationMode    String?  @map("collaboration_mode") // autonomous|supervised|interactive|manual
+
+  runs          AgentRun[]
+  gitOperations GitOperation[]
 
   @@unique([workspaceId, handle])
   @@index([workspaceId])
@@ -564,4 +581,31 @@ model Session {
 
   @@index([expire])
   @@map("session")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 8+ — Git-based team collaboration (GIT_COLLABORATION.md)
+// ---------------------------------------------------------------------------
+// Audit trail of Git operations an agent performs against a task's repo:
+// clone | pull | push | commit | branch | pr | merge. Status: pending | success
+// | failed. Drives the Flotilla↔Git bridge (status dashboard, socket events)
+// and the smart-handoff protocol (PR opened → @qa, tests passed → @reviewer).
+model GitOperation {
+  id          String   @id @default(uuid()) @db.Uuid
+  agentId     String   @map("agent_id") @db.Uuid
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  taskId      String?  @map("task_id") @db.Uuid
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  operation   String // clone | pull | push | commit | branch | pr | merge
+  status      String // pending | success | failed
+  branch      String?
+  commitHash  String?  @map("commit_hash")
+  error       String?
+  metadata    Json?    @db.JsonB // {commitsAhead, pullRequest, message, ...}
+  createdAt   DateTime @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([agentId, status])
+  @@index([taskId])
+  @@map("git_operations")
 }

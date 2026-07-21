@@ -28,6 +28,7 @@ import { router as pushRouter } from './modules/push/router.js';
 import { router as searchRouter } from './modules/search/router.js';
 import { router as usageRouter } from './modules/usage/router.js';
 import { router as agentTeamsRouter } from './modules/agent-teams/router.js';
+import { router as gitRouter } from './modules/git/router.js';
 
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -114,6 +115,7 @@ export function createApp() {
   app.use('/api/v1', searchRouter);
   app.use('/api/v1', usageRouter);
   app.use('/api/v1', agentTeamsRouter);
+  app.use('/api/v1', gitRouter);
 
   // --- web SPA (Option A: API serves the built single-origin web app) ---
   // Mounted AFTER the API routes so it never shadows them. Static assets are

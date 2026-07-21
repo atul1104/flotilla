@@ -13,7 +13,13 @@ import { Server } from 'socket.io';
 import { sessionMiddleware } from '../lib/session.js';
 import { prisma } from '../lib/db.js';
 import { logger } from '../lib/logger.js';
-import { CLIENT_SOCKET_EVENTS, DAEMON_SOCKET_EVENTS, HEARTBEAT } from '@atul1104/shared';
+import {
+  CLIENT_SOCKET_EVENTS,
+  DAEMON_SOCKET_EVENTS,
+  HEARTBEAT,
+  GIT_SOCKET_EVENTS,
+  gitEventForOperation,
+} from '@atul1104/shared';
 import { listWorkspacesForActor } from '../modules/workspaces/service.js';
 import { markRead } from '../modules/channels/service.js';
 import { resolveDeviceToken, markOnline, markOffline } from '../modules/computers/service.js';
@@ -195,6 +201,14 @@ export function initRealtime(httpServer, corsOrigin) {
     },
     broadcastAgentStatus(workspaceId, agentId, status) {
       clientNs.to(`ws:${workspaceId}`).emit(E.AGENT_STATUS, { agentId, status });
+    },
+    // Phase 8+ — Git collaboration: broadcast a recorded Git operation. Emits a
+    // typed event (branch.created / commit.pushed / pr.opened / …) the dashboard
+    // can switch on, plus the generic operation.recorded.
+    broadcastGitOperation(workspaceId, op) {
+      const typed = gitEventForOperation(op.operation, op.status);
+      clientNs.to(`ws:${workspaceId}`).emit(typed, { op });
+      clientNs.to(`ws:${workspaceId}`).emit(GIT_SOCKET_EVENTS.OPERATION_RECORDED, { op });
     },
     broadcastApproval(workspaceId, approval, kind) {
       clientNs

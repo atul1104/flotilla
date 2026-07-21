@@ -25,6 +25,16 @@ export function serializeAgent(a) {
     approvalPolicy: { ...DEFAULT_APPROVAL_POLICY, ...(a.approvalPolicy ?? {}) },
     status: a.status,
     createdAt: a.createdAt,
+    // Phase 8+ — Git collaboration summary (read from the row, no extra query).
+    // The token is never serialized; only whether one is set.
+    git: {
+      enabled: Boolean(a.defaultRepoUrl),
+      repoUrl: a.defaultRepoUrl,
+      defaultBranch: a.defaultBranch,
+      gitWorkflow: a.gitWorkflow,
+      collaborationMode: a.collaborationMode,
+      hasGithubToken: Boolean(a.githubTokenEncrypted),
+    },
   };
 }
 

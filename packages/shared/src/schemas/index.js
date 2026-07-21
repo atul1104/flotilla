@@ -6,3 +6,4 @@ export * from './channel.js';
 export * from './task.js';
 export * from './agent.js';
 export * from './phase6.js';
+export * from './git.js';

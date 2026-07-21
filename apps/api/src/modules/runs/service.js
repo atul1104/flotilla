@@ -26,6 +26,10 @@ import { approvalRequestPayloadSchema } from '@atul1104/shared';
 import { createMessage } from '../messages/service.js';
 import { createSubtask } from '../tasks/service.js';
 import { markOnboardingStep } from '../workspaces/onboarding.js';
+// Phase 8+ — append the Git collaboration section to a git-enabled agent's
+// system prompt at dispatch time (GIT_COLLABORATION.md §Phase 1). git/service
+// doesn't import runs, so this is cycle-free.
+import { composeSystemPrompt } from '../git/service.js';
 
 // Runtime statuses a daemon may set directly via a `status` run event. Terminal
 // states (succeeded/failed/cancelled) and the awaiting_approval park happen
@@ -103,7 +107,8 @@ async function buildDispatchContext(run, agent, contextText) {
     agent: {
       id: agent.id,
       handle: agent.handle,
-      systemPrompt: agent.systemPrompt,
+      // Phase 8+ — base prompt + the Git section (empty when no repo configured).
+      systemPrompt: composeSystemPrompt(agent),
       runtime: agent.runtime,
       model: agent.model,
       approvalPolicy: agent.approvalPolicy,
