@@ -115,15 +115,39 @@ export async function deleteAgent(workspaceId, agentId) {
   const agent = await getAgent(workspaceId, agentId);
   const actorId = agent.actorId;
   await prisma.$transaction(async (tx) => {
-    // Delete the agent first (AgentRun etc. cascade on agentId).
-    await tx.agent.delete({ where: { id: agentId } });
     // The Actor + workspace membership aren't cascade-removed by the Agent
     // delete (Actor.agentId has no onDelete), so clean them up explicitly —
     // otherwise orphaned members show up as blank rows in @mention suggestions
     // and the members list.
     if (actorId) {
-      await tx.workspaceMember.deleteMany({ where: { actorId } }).catch(() => {});
-      await tx.actor.deleteMany({ where: { id: actorId } }).catch(() => {});
+      // Delete channel memberships for this actor
+      await tx.channelMember.deleteMany({ where: { actorId } });
+      // Delete reactions for this actor
+      await tx.reaction.deleteMany({ where: { actorId } });
+      // Handle channels: reassign channels created by this agent to owner
+      const ownerMember = await tx.workspaceMember.findFirst({
+        where: { workspaceId, role: 'owner' },
+      });
+      if (ownerMember) {
+        // Reassign channels created by this agent to the owner
+        await tx.channel.updateMany({
+          where: { createdById: actorId },
+          data: { createdById: ownerMember.actorId },
+        });
+        // Reassign tasks created by this agent to the owner
+        await tx.task.updateMany({
+          where: { createdById: actorId },
+          data: { createdById: ownerMember.actorId },
+        });
+      }
+      // Unassign this actor from any tasks
+      await tx.task.updateMany({ where: { assigneeId: actorId }, data: { assigneeId: null } });
+      // Delete workspace membership
+      await tx.workspaceMember.deleteMany({ where: { actorId } });
+      // Finally delete the actor
+      await tx.actor.deleteMany({ where: { id: actorId } });
     }
+    // Delete the agent last (AgentRun etc. cascade on agentId)
+    await tx.agent.delete({ where: { id: agentId } });
   });
 }
