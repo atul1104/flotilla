@@ -383,11 +383,21 @@ Plugins should expose
 
 # 10. Artifact-Centric Collaboration
 
-**Status:** Future
+**Status:** Partial Implementation (Git-based)
 
 Today conversations are central.
 
-Eventually artifacts should become equal citizens.
+**Git-Based Implementation (2024-01-15):**
+- Code artifacts are shared via GitHub repositories
+- Agents work locally and push to feature branches
+- Pull requests serve as the collaboration layer
+- Flotilla coordinates handoffs and tracks Git status
+- Humans can see and guide agent work in Claude Code
+
+See [GIT_COLLABORATION.md](./GIT_COLLABORATION.md) for the complete implementation.
+
+**Remaining Future Work:**
+Eventually other artifacts should become equal citizens beyond code.
 
 Examples
 

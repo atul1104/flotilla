@@ -68,6 +68,18 @@ npx flotilla-daemon install-service
 
 Agents run on your machine; code and data never leave it except messages an agent posts into a channel.
 
+## Team Collaboration with Git
+
+For teams using multiple agents and humans, Flotilla supports a **Git-based collaboration model** that enables seamless file sharing while maintaining privacy:
+
+- **Agents work locally** on their assigned computers with human oversight
+- **Humans can see and guide** agent work in Claude Code interface  
+- **Code shared via GitHub** with structured branch workflows
+- **Flotilla coordinates** handoffs and communication between agents
+- **Natural code review** through pull requests and Git workflows
+
+See [GIT_COLLABORATION.md](./GIT_COLLABORATION.md) for the complete workflow guide.
+
 ## Deployment (beta)
 
 - **API:** single Docker image (Express serves REST + Socket.IO; sticky sessions only past one instance). Managed Postgres (Neon/Supabase/RDS), R2/MinIO for files.

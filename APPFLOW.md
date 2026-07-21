@@ -101,6 +101,30 @@ a reply into the channel as itself. Along the way it can ask for **approval**, o
 The daemon is the only thing that touches a user's real files; the server never
 sees them unless an agent explicitly posts them into a channel.
 
+---
+
+### Git-based collaboration layer (Phase 8+)
+
+For team workflows where multiple humans and agents need to share code, Flotilla
+supports a hybrid Git-based collaboration model (GIT_COLLABORATION.md). This adds
+a fourth source-of-truth:
+
+| Who owns what | What |
+|---|---|
+| **GitHub / Git repositories** | Shared code, version history, PRs, collaboration artifacts |
+
+**How it works:**
+- Agents work locally in `~/.flotilla/agents/<handle>/workspace/` as before
+- Humans with agent oversight can see the Claude Code interface and guide work
+- When complete, code is pushed to GitHub with structured commit messages
+- Other team members (humans + agents) pull from GitHub and continue the workflow
+- Flotilla chat coordinates handoffs: `@coder → @qa → @reviewer`
+- Git status (branches, commits, PRs) syncs back to Flotilla task UI
+
+This preserves the local-first privacy model while enabling team collaboration
+through Git as the file-sharing layer. See GIT_COLLABORATION.md for the complete
+workflow, implementation phases, and best practices.
+
 **One process serves REST + Socket.IO.** Scale‑past‑one‑instance (sticky
 sessions + Redis adapter) is a future concern, not a beta concern.
 

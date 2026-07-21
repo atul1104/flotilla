@@ -119,8 +119,32 @@ Send it. The agent wakes up, works, and **replies in the channel as itself**. �
 - **Scheduled tasks** — "every weekday at 9am" and the assigned agent fires automatically
 - **Agent teams** — coder hands off to reviewer hands off to QA
 - **Push notifications** — install the app, get pinged when an agent finishes
+- **Git collaboration** — enable team workflows with GitHub integration (see below)
 
-👉 Full details for all of these in **[`USER_FLOW.md`](./USER_FLOW.md)**.
+---
+
+## 🚀 Team Collaboration with Git (Advanced)
+
+**For teams with multiple humans and agents**, enable the Git-based collaboration mode:
+
+### Setup (5 minutes):
+1. **Create GitHub repository** for your project
+2. **Add GitHub tokens** to agent configuration (Agents & Computers → Edit agent)
+3. **Assign computers** to agents (one per team member)
+4. **Use team templates** (Dev team: coder + reviewer + QA)
+
+### Workflow:
+- **@coder** implements features locally with human guidance in Claude Code
+- **Push to GitHub** feature branch with structured messages
+- **@qa** gets notified, pulls code, runs tests, pushes results
+- **@reviewer** gets notified, reviews code, approves merge
+- **All coordination** happens in Flotilla chat
+
+**Result:** Seamless team collaboration where humans can see and guide agent work, while code is shared through Git's proven workflows.
+
+👉 **Full guide:** [`GIT_COLLABORATION.md`](./GIT_COLLABORATION.md)
+
+👉 Full details for other features in **[`USER_FLOW.md`](./USER_FLOW.md)**.
 
 ---
 
