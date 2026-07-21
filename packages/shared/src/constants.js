@@ -28,7 +28,7 @@ export const PLAN_PRICING = {
  */
 export const PLAN_LIMITS = {
   [PLANS.FREE]: {
-    maxAgents: 3,
+    maxAgents: Infinity,
     messageHistoryDays: 30, // gated on read, data retained
     uploadsBytesPerMonth: 100 * 1024 * 1024, // 100 MB
     jointChannels: false,
